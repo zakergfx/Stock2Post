@@ -52,10 +52,11 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://app.loicktest.be',
+    'https://vpsapp.loicktest.be'
 ]
 
 # Application definition
-CELERY_BROKER_URL = "pyamqp://rabbitmq:5672"
+CELERY_BROKER_URL = "pyamqp://as_rabbitmq:5672"
 
 INSTALLED_APPS = [
     'django.contrib.admin',

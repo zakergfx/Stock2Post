@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
             },
             body: JSON.stringify({ 'token': token})
         })
+        console.log(Var.backendUrl + "/api/login/")
         let data = await response.json()
 
         if (response.ok) {
