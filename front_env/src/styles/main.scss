@@ -1,0 +1,66 @@
+@import "common.scss";
+
+.MainPage {
+
+    .Content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        margin-top: 3rem;
+
+
+
+        h1,
+        h2,
+        h3 {
+            width: 100%;
+        }
+
+        h2{
+            span{
+                background-color: yellow;
+            }
+        }
+
+        .Settings {
+            width: 100%;
+            form {
+                display: grid;
+                grid-template-columns: 10fr 1fr;
+
+                gap: 1rem;
+
+                label {
+
+
+                    color: black;
+
+                    &.Secondary {
+                        color: rgb(4, 1, 179)
+                    }
+
+                    b {
+                        color: rgb(4, 1, 179)
+                    }
+                }
+
+                input[type="checkbox"] {
+                    height: 1.5rem;
+                }
+                input[type="submit"]{
+                    font-weight: bold;
+                    grid-column: span 2;
+                    font-size: 1.2rem;
+                    cursor: pointer;
+                    
+                }
+                select, option {
+                    color:rgb(4, 1, 179)
+                }
+
+            }
+        }
+
+    }
+}

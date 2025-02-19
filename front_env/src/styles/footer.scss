@@ -1,0 +1,23 @@
+@import "common.scss";
+
+.Footer {
+
+    background-color: rgb(233, 233, 233);
+    padding: 1rem;
+    display: flex;
+    flex-direction: row;
+
+    gap: 5rem;
+
+    .Column{
+        display: flex;
+        flex-direction: column;
+
+
+        a{
+            color: black;
+        }
+
+    }
+
+}
