@@ -1,0 +1,92 @@
+@import './styles/common.scss';
+
+html {
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+
+  font-size: 16px;
+
+  overflow-x: hidden;
+
+
+}
+
+body {
+
+  margin: 0;
+  width: 100vw;
+  color: black;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+}
+
+.App{
+
+  width: 100vw;
+  margin: 0;
+  padding: 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  position: relative;
+
+}
+
+.WithoutHeader{
+
+  position: static;
+  margin-top: 5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+* {
+  font-family: $fontFamily;
+  box-sizing: border-box;
+
+
+}
+
+
+
+/* Breakpoints */
+@media (min-width: 3000px) {
+  html {
+    font-size: 1.2rem; /* Équivalent à 28px si 1rem = 16px */
+  }
+}
+@media (max-width: 3000px) {
+  html {
+    font-size: 1.1rem; /* Équivalent à 18px */
+  }
+}
+
+@media (max-width: 2560px) {
+  html {
+    font-size: 1rem; /* 16px */
+  }
+}
+
+@media (max-width: 1024px) {
+  html {
+    font-size: 0.8rem; /* 13.5px */
+  }
+}
+@media (max-width: 768px) {
+  html {
+    font-size: 0.75rem; /* 13px */
+  }
+}
+@media (max-width: 475px) {
+  html {
+    font-size: 0.7rem; /* 12px */
+  }
+}

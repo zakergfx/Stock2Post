@@ -1,0 +1,52 @@
+$fontFamily: "Poppins";
+
+$firstColor: #AF3535;
+$secondColor: #404040;
+$thirdColor: #e9e9e9;
+$bgColor: #181818;
+$bgColor2: #262626;
+
+h1{
+    font-size: 2.5rem;
+}
+
+
+
+a {
+    &.Button {
+
+        padding: 1rem;
+        border-radius: 0.5rem;
+
+        color: white;
+        font-weight: bold;
+        text-align: center;
+
+
+        &.Primary {
+            background-color: $firstColor;
+        }
+
+        &.Secondary {
+            background-color: $secondColor;
+        }
+    }
+}
+
+input{
+    border-radius: 0.5rem;
+    padding: 1rem;
+
+    background-color: $thirdColor;
+
+}
+
+textarea{
+    border-radius: 0.5rem;
+    padding: 1rem;
+
+    resize: none;
+
+    background-color: $thirdColor;
+
+}
