@@ -1,18 +1,71 @@
 import { useContext, useEffect, useState } from 'react'
 import "../styles/login.scss"
 import * as Api from "../utils/Api.js"
-import { AuthContext } from '../context/AuthContext.js'
 import FacebookLoginButton from '../components/FacebookLoginButton.js'
+import { AuthContext } from '../context/AuthContext.js'
+import Alert from '../components/Alert.js'
+import { useNavigate } from 'react-router-dom';
 
 function LoginPage() {
-    const token = "EAAIzZAhit7IcBOxnZCACOSngzA6pZCjRk2emlCrmTWlwP9ZBbVLX13ZA2GcCdTqAU1mjBAmaCkOhgdiZARz9E7OnXf4y9Tfxv7QRZCC53J5ZAqoskDjAG54hOv8otIli5WZCxZCIudFWYZBbJzY7JQCfOwa4BssLsS0fnIKy0tXOTBS7nV54qGAHW1HV1Gp8CnElgom"
+    const navigate = useNavigate();
+
+    const { loginUser, isRegisterInProgress, setIsRegisterInProgress, pageToken, fbId } = useContext(AuthContext)
+    const [dealers, setDealers] = useState([])
+    const [selectedDealer, setSelectedDealer] = useState("")
+
+    async function handleSyncButtonClick() {
+        if (selectedDealer != "") {
+            const data = { "dealer": selectedDealer, "fbId": fbId, "pageToken": pageToken }
+            const response = await Api.fetchPost("/api/register/", data, false)
+            setIsRegisterInProgress(false)
+
+            // login
+            const success = (await loginUser(pageToken)).success
+            if (success) {
+                Alert.success("Connecté !")
+                navigate("/main")
+            }
+            else {
+                Alert.error("Erreur lors de la connexion")
+            }
+            navigate("/main")
 
 
+        }
+        else {
+            alert("Veuillez sélectionner une page autoscout")
+        }
+
+    }
+
+    useEffect(() => {
+        if (isRegisterInProgress) {
+            getFreeDealers()
+        }
+
+        async function getFreeDealers() {
+            const response = await Api.fetchGet("/api/dealers", false)
+            console.log(response)
+            setDealers(response.detail)
+        }
+
+
+    }, [isRegisterInProgress])
 
     return (<div className="LoginPage">
         <div className="Content">
-            <FacebookLoginButton/>
-
+            <FacebookLoginButton />
+            {isRegisterInProgress && dealers ?
+                <div className="RegisterProgress">
+                    Choisissez une page à sync :
+                    <select value={selectedDealer} onChange={(e) => setSelectedDealer(e.target.value)}>
+                        <option value="">-- Sélectionnez --</option>
+                        {dealers.map((value, index) => <option key={index}>{value.name}</option>)}
+                    </select>
+                    <button onClick={handleSyncButtonClick}>Confirmer</button>
+                </div>
+                : null
+            }
         </div>
     </div>)
 

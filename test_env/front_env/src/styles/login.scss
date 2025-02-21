@@ -5,5 +5,10 @@
     .Content {
         margin-top: 3rem;
       
+
+        .RegisterProgress{
+            display: flex;
+            flex-direction: column;
+        }
     }
 }

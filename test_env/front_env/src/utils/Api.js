@@ -1,6 +1,6 @@
 import * as Var from "./Var.js"
 
-export async function fetchGet(page, auth = true) {
+export async function fetchGet(page, auth=true) {
 
     let headers = {}
 

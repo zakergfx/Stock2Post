@@ -3,26 +3,60 @@ import FacebookLogin from 'react-facebook-login';
 import * as Api from "../utils/Api"
 import { AuthContext } from '../context/AuthContext.js'
 import { useContext } from 'react';
+import Alert from '../components/Alert.js'
+import { useNavigate } from 'react-router-dom';
 
 
 function FacebookLoginButton() {
+  const navigate = useNavigate();
 
-  const { loginUser } = useContext(AuthContext)
+  const { loginUser, setIsRegisterInProgress, setFbId, setPageToken } = useContext(AuthContext)
 
 
   function responseFacebook(response) {
     if (response.accessToken) {
-      getPageToken(response.accessToken)
+      login(response.accessToken)
     }
   };
 
-  async function getPageToken(userToken){
-    const response = await fetch("https://graph.facebook.com/v22.0/530119660189423?access_token="+userToken+"&fields=access_token")
-    const data = await response.json()
-    loginUser(data.access_token)
+  async function login(userToken) {
+    // récupération long user token
+    let response = await fetch(`https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=REMOVED_FACEBOOK_APP_ID&client_secret=cf4ad9d1e6a0f5b315bbd17d7e407e00&fb_exchange_token=${userToken}`)
+    const longUserToken = (await response.json()).access_token
+
+    //récupération long page token
+    response = await fetch(`https://graph.facebook.com/v22.0/8576094222494650/accounts?access_token=${longUserToken}`)
+    const data = (await response.json()).data
+
+    // vérification que l'user a choisi une seule page
+    if (data.length === 1) {
+      const longPageToken = data[0].access_token
+      setPageToken(longPageToken)
+      setFbId(data[0].id)
+      const isRegistered = (await Api.fetchPost("/api/isregistered/", { "token": longPageToken })).detail.isRegistered
+
+      if (!isRegistered) {
+        setIsRegisterInProgress(true)
+      }
+      else {
+        const success = (await loginUser(longPageToken)).success
+        if (success) {
+          Alert.success("Connecté !")
+          navigate("/main")
+        }
+        else {
+          Alert.error("Erreur lors de la connexion")
+        }
+      }
+
+
+    }
+    else {
+      alert("Veuillez vous reconnecter en sélectionnant UNE PAGE")
+    }
   }
 
-  
+
 
   return (
     <div>
