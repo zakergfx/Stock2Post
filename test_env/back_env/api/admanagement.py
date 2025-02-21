@@ -9,8 +9,6 @@ from bs4 import BeautifulSoup
 from . import models, tools
 from difflib import SequenceMatcher
 import hashlib
-from PIL import Image
-
 
 TOKEN = "EAAIzZAhit7IcBOZBUWySlTzLE5AMPPEnjsCZBqEESOviSqO366xgOQDQTpf3cT7RWJfPEmn7ZARzdZBHjWBOu5bWTAh4D1UwDLFsWgZCLNT0Ee1EEvrVruZBuHZBupihuFTl5mzlSvCiwP65WnbgZCcQrmfbsGAKRBcZATeRmeru3zzVBgWHfbSIZBQuc5ZBGvdA0los"
 PAGEID = "530119660189423"
@@ -20,6 +18,13 @@ def testing():
     scheduledTask()
     # postAdsRecap()
     # postNewAds()
+
+# class Admanagement():
+#     def __init__(self, token, pageId):
+#         self.token = token
+#         self.pageId = pageId
+
+    
 
 def cleanFbPage():
     url = f"{BASEURL}/feed"

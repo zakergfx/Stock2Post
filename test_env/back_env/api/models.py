@@ -22,9 +22,10 @@ class Dealer(models.Model):
     phone = models.CharField(max_length=500)
 
     fbId = models.PositiveIntegerField(default=None, blank=True, null=True)
+    token = models.CharField(max_length=500, null=True, blank=True)
 
     fk_settings = models.OneToOneField(Settings, on_delete=models.CASCADE)
-    fk_user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    fk_user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.name

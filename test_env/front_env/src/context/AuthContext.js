@@ -14,6 +14,11 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(() => localStorage.getItem("access") ? jwtDecode(localStorage.getItem("access")) : null)
     const [loading, setLoading] = useState(true)
 
+    const [isRegisterInProgress, setIsRegisterInProgress] = useState(false)
+    const [pageToken, setPageToken] = useState()
+    const [fbId, setFbId] = useState()
+
+
 
     async function loginUser(token) {
         let response = await fetch(Var.backendUrl + "/api/login/", {
@@ -23,7 +28,6 @@ export function AuthProvider({ children }) {
             },
             body: JSON.stringify({ 'token': token})
         })
-        console.log(Var.backendUrl + "/api/login/")
         let data = await response.json()
 
         if (response.ok) {
@@ -40,6 +44,7 @@ export function AuthProvider({ children }) {
         }
 
     }
+
 
   
     function logoutUser() {
@@ -87,7 +92,13 @@ export function AuthProvider({ children }) {
     let contextData = {
         user: user,
         loginUser: loginUser,
-        logoutUser: logoutUser
+        logoutUser: logoutUser,
+        isRegisterInProgress: isRegisterInProgress,
+        setIsRegisterInProgress: setIsRegisterInProgress,
+        pageToken: pageToken,
+        setPageToken: setPageToken,
+        fbId: fbId,
+        setFbId: setFbId
     }
 
 
