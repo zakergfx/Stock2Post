@@ -1,14 +1,11 @@
-from django.shortcuts import render
-from django.http import HttpResponse
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from . import models, serializers
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
 from rest_framework.permissions import AllowAny
 import requests
-from django.contrib.auth import login
 from django.contrib.auth.models import User
+from . import admanagement
 
 class DealersView(APIView):
     authentication_classes = []
@@ -17,6 +14,7 @@ class DealersView(APIView):
     def get(self, request):
         dealers = models.Dealer.objects.filter(fk_user=None)
         serializer = serializers.DealerSerializer(dealers, many=True)
+
         return Response(serializer.data, status=200)
 
 class DealerSpecificView(APIView):
@@ -24,6 +22,10 @@ class DealerSpecificView(APIView):
         dealer = models.Dealer.objects.get(name=dealer)
         serializer = serializers.DealerSerializer(dealer)
         return Response(serializer.data, status=200)
+    
+class MeView(APIView):
+    def get(self, request):
+        return Response({"user": request.user.username}, status=200)
     
 class SettingsSpecificView(APIView):
     def patch(self, request, dealer):
@@ -56,6 +58,15 @@ class IsRegisteredView(APIView):
         data = {"isRegistered": accountExists}
         return Response(data, status=200)
 
+class TestingView(APIView):
+    def post(self, request):
+        scenario = request.data["scenario"]
+        dealer = models.Dealer.objects.get(fk_user=request.user)
+
+        admanagement.createTestPost(dealer, scenario)
+
+        return Response({dealer.name: scenario}, status=200)
+    
 class RegisterView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]

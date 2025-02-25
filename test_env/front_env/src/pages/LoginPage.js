@@ -54,7 +54,15 @@ function LoginPage() {
 
     return (<div className="LoginPage">
         <div className="Content">
+            <h1>Connexion</h1>
+            <h2>Etapes</h2>
+            <ul>
+                <li>Connectez-vous avec Facebook</li>
+                <li>Sélectionnez la page que vous souhaitez lier à l'outil</li>
+                <li>Sélectionnez le stock autoscout que vous voulez synchroniser avec votre page</li>
+            </ul>
             <FacebookLoginButton />
+            <p>Une fois connecté vous serez redirigé vers la page d'administration vous permettant de gérer vos posts Facebook.</p>
             {isRegisterInProgress && dealers ?
                 <div className="RegisterProgress">
                     Choisissez une page à sync :

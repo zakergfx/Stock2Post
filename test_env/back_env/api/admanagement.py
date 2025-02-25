@@ -9,42 +9,92 @@ from bs4 import BeautifulSoup
 from . import models, tools
 from difflib import SequenceMatcher
 import hashlib
+import cv2
+import numpy as np
 
-TOKEN = "EAAIzZAhit7IcBOZBUWySlTzLE5AMPPEnjsCZBqEESOviSqO366xgOQDQTpf3cT7RWJfPEmn7ZARzdZBHjWBOu5bWTAh4D1UwDLFsWgZCLNT0Ee1EEvrVruZBuHZBupihuFTl5mzlSvCiwP65WnbgZCcQrmfbsGAKRBcZATeRmeru3zzVBgWHfbSIZBQuc5ZBGvdA0los"
-PAGEID = "530119660189423"
-BASEURL = f"https://graph.facebook.com/v22.0/{PAGEID}"
+BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    scheduledTask()
-    # postAdsRecap()
-    # postNewAds()
+    # scheduledTask()
+    createVideo()
 
-# class Admanagement():
-#     def __init__(self, token, pageId):
-#         self.token = token
-#         self.pageId = pageId
 
-    
+
 
 def cleanFbPage():
-    url = f"{BASEURL}/feed"
-    headers = {"Authorization": f"OAuth {TOKEN}"}
-    response = requests.get(url, headers=headers).json()["data"]
-    
-    for line in response:
-        url = f"{BASEURL}_{line['id'].split('_')[1]}"
-        response = requests.delete(url, headers=headers)
+    dealers = models.Dealer.objects.all()
+    for dealer in dealers:
+        url = f"{BASEURL}/{dealer.fbId}/feed"
+        headers = {"Authorization": f"OAuth {dealer.token}"}
+        response = requests.get(url, headers=headers).json()
 
-    print("suppression ok")
+        
+        for line in response:
+            url = f"{BASEURL}/{dealer.fbId}_{line['id'].split('_')[1]}"
+            response = requests.delete(url, headers=headers)
+
+        print("suppression ok")
+
+
+def createVideo():
+    images = ["media/modifiedFile.jpg", "media/originalFile.jpg"]
+   # Paramètres de la vidéo
+    fps = 1  # Images par seconde
+    duration_per_image = 3  # Durée d'affichage de chaque image (en secondes)
+    frame_size = (640, 480)  # Taille de la vidéo
+    output_file = "diaporama.avi"
+
+    # Création du writer vidéo
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    video = cv2.VideoWriter(output_file, fourcc, fps, frame_size)
+
+    for image_path in images:
+        img = cv2.imread(image_path)
+        
+        if img is None:
+            print(f"Erreur : Impossible de charger {image_path}")
+            continue
+        
+        img = cv2.resize(img, frame_size)  # Redimensionner l'image
+        
+        # Ajouter du texte "test" au centre
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        text = "test"
+        font_scale = 2
+        font_thickness = 5
+        text_color = (255, 255, 255)  # Blanc
+        outline_color = (0, 0, 0)  # Noir
+
+        # Obtenir la taille du texte pour le centrer
+        text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
+        text_x = (frame_size[0] - text_size[0]) // 2
+        text_y = (frame_size[1] + text_size[1]) // 2
+
+        # Ajouter un contour noir pour la lisibilité
+        for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:  # 4 coins autour du texte
+            cv2.putText(img, text, (text_x + dx, text_y + dy), font, font_scale, outline_color, font_thickness)
+
+        # Ajouter le texte en blanc
+        cv2.putText(img, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
+
+        # Ajouter plusieurs copies de l'image pour créer un effet de pause
+        for _ in range(fps * duration_per_image):
+            video.write(img)
+
+    video.release()
+    cv2.destroyAllWindows()
+
+    print(f"Vidéo créée avec succès : {output_file}")
+
 
 def addImageToImage(imagePath, overlayPath, outputPath, position=None):
-        # Ouvre les images
+    # Ouvre les images
     baseImage = Image.open(imagePath).convert("RGBA")
     overlayImage = Image.open(overlayPath,).convert("RGBA")
     
     # Calcule le ratio pour redimensionner l'image de superposition sans la déformer
     overlayRatio = min(baseImage.width / overlayImage.width, baseImage.height / overlayImage.height)
-    newSize = (int(overlayImage.width * overlayRatio)//2, int(overlayImage.height * overlayRatio)//2)
+    newSize = (int(1.5*overlayImage.width * overlayRatio)//2, int(1.5*overlayImage.height * overlayRatio)//2)
     overlayImage = overlayImage.resize(newSize, Image.LANCZOS)
     
     # Définit la position par défaut (centrée si non spécifiée)
@@ -186,7 +236,7 @@ def createAdDict(url):
     if carPassUrl:
         ad["carPassUrl"] = carPassUrl.get("href")
 
-    dealerUrl = soup.find(class_="scr-link StockList_link__K_aw7").get("href")
+    dealerUrl = "/".join(soup.find(class_="scr-link DealerLinks_bold__urWLL").get("href").split("/")[:-1])
     ad["fk_dealer"] = models.Dealer.objects.get(url=dealerUrl)
 
     ad["basicData"] = json.dumps(getParsedHtmlTab(soup, "basic-details-section"))
@@ -203,7 +253,7 @@ def createAdDict(url):
 
     # ajout des images
 
-    pictures = soup.find_all(class_="image-gallery-thumbnail-image")
+    pictures = soup.find_all(class_="image-gallery-thumbnail-image")[:1]
     ad["pictures"] = "-----".join([picture.get("src").replace("120x90.jpg", "1920x1080.webp") for picture in pictures])
 
   
@@ -237,7 +287,7 @@ def getDealerRemoteAdsUrls(dealer):
             ads += soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
 
     adsUrls = []
-    for ad in ads[:3]:
+    for ad in ads:
         adsUrls.append("https://autoscout24.be"+ad.get("href"))
     
     return adsUrls
@@ -249,8 +299,9 @@ def getAdsChanges(dealer):
     # RENVOIT DES VOITURES EN DB LOCAL VENDUES
     adsSold = []
     for localAd in localAds:
-        # if localAd.url not in remoteAdsUrls:
-        adsSold.append(localAd)
+        if localAd.url not in remoteAdsUrls:
+            adsSold.append(localAd)
+            localAds.delete()
 
     # AJOUT DES VOITURES EN DB LOCAL
     adsToAdd = []
@@ -287,23 +338,18 @@ def removeFormatOfSummary(summarySoup):
 
     return summary
 
-
-
-    
-        
-def uploadPicture(pictureUrl):
-    url = f"{BASEURL}/photos"
-    body = {"access_token": TOKEN, "published": False, "url": pictureUrl}
+def uploadPicture(pictureUrl, dealer):
+    url = f"{BASEURL}/{dealer.fbId}/photos"
+    body = {"access_token": dealer.token, "published": False, "url": pictureUrl}
 
     response = requests.post(url, json=body)
-
 
     pictureId = response.json()["id"]
     return pictureId
 
-def uploadPictureFromLocal(path, msg):
-    url = f"{BASEURL}/photos"
-    body = {"access_token": TOKEN, "message": msg}
+def uploadPictureFromLocal(path, msg, dealer):
+    url = f"{BASEURL}/{dealer.fbId}/photos"
+    body = {"access_token": dealer.token, "message": msg}
 
     with open(path, "rb") as f:
         files = {"file": f}
@@ -314,22 +360,22 @@ def uploadPictureFromLocal(path, msg):
     pictureId = response.json()["id"]
     return pictureId
 
-def uploadPictures(ad):
-    pictures = ad.pictures.split("-----")[:3]
+def uploadPictures(ad, dealer):
+    pictures = ad.pictures.split("-----")
 
     picturesIds = []
 
     for picture in pictures:
-        pictureId = uploadPicture(picture)
+        pictureId = uploadPicture(picture, dealer)
         picturesIds.append(pictureId)
 
     return picturesIds
 
-def createPost(ad, msg):
-    url = f"{BASEURL}/feed"
-    body = {"message": msg, "access_token": TOKEN, "attached_media": []}
+def createPost(ad, msg, dealer):
+    url = f"{BASEURL}/{dealer.fbId}/feed"
+    body = {"message": msg, "access_token": dealer.token, "attached_media": []}
 
-    picturesIds = uploadPictures(ad)
+    picturesIds = uploadPictures(ad, dealer)
 
     for pictureId in picturesIds:
         body["attached_media"].append({"media_fbid": pictureId})
@@ -338,30 +384,33 @@ def createPost(ad, msg):
     response = requests.post(url, json=body)
     if (response.status_code == 200):
         ad.isPublished = True
+        ad.save()
 
 
-def createRecap(msg):
-    url = f"{BASEURL}/feed"
-    body = {"message": msg, "access_token": TOKEN}
+def createRecap(msg, dealer):
+    url = f"{BASEURL}/{dealer.fbId}/feed"
+    body = {"message": msg, "access_token": dealer.token}
 
     response = requests.post(url, json=body)
 
 
-def postNewAds():
-    ads = models.Ad.objects.filter(isPublished=False)
+def postNewAds(dealer):
+    ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
     for ad in ads:
         msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-        createPost(ad, msg)
+        createPost(ad, msg, dealer)
 
-def reuploadAds(weeks):
-    ads = models.Ad.objects.filter(isPublished=True)
+def reuploadAds(weeks, dealer):
+    ads = models.Ad.objects.filter(isPublished=True, fk_dealer=dealer)
     for ad in ads:
         if isTimestampOlderThan(weeks, ad.date):
             msg = f"""🚨🚨🚨{boldText("TOUJOURS DISPONIBLE")} 🚨🚨🚨\n\nCe modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")} est toujours disponible\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-            createPost(ad, msg)
+            createPost(ad, msg, dealer)
+            ad.date = int(time.time())
+            ad.save()
 
-def postAdsRecap(weeks):
-    ads = models.Ad.objects.filter(isPublished=True)
+def postAdsRecap(weeks, dealer):
+    ads = models.Ad.objects.filter(isPublished=True, fk_dealer=dealer)
 
     if len(ads) > 0:
 
@@ -375,32 +424,76 @@ def postAdsRecap(weeks):
             lines.append(f"""\n{boldText("Stock complet")} : {ad.fk_dealer.url}""")
             lines = "\n".join(lines)
             msg = f"🚨🚨🚨{boldText('Recapitulatif de nos modeles en stock')}🚨🚨🚨\n\n{lines}"
-            createRecap(msg)
+            createRecap(msg, dealer)
 
-def postSoldAds():
-    ads = models.Ad.objects.filter(isSold=True)
+            ads[0].fk_dealer.fk_settings.lastSummary = int(time.time())
+            ads[0].fk_dealer.fk_settings.save()
+
+
+def postSoldAds(dealer):
+    ads = models.Ad.objects.filter(isSold=True, fk_dealer=dealer)
     for ad in ads:
         createSoldPicture(ad)
         msg = f"""🚗🚗🚗{boldText("VEHICULE VENDU")}🚗🚗🚗\n\nFélicitation à l'acheteur de ce modèle {ad.model} pour son acquisition !\n\nVous pouvez retrouver l'ensemble de notre stock sur {ad.fk_dealer.url}"""
-        uploadPictureFromLocal("media/modifiedFile.jpg", msg)
+        uploadPictureFromLocal("media/modifiedFile.jpg", msg, dealer)
         ad.delete()
 
-def postEditedAds():
-    ads = models.Ad.objects.filter(isModified=True)
+def postEditedAds(dealer):
+    ads = models.Ad.objects.filter(isModified=True, fk_dealer=dealer)
     for ad in ads:
         msg = f"""❗❗❗{boldText("MODIFICATION D'ANNONCE")} ❗❗❗\n\nDes modifications ont été apportées à la fiche technique de ce modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-        createPost(ad, msg)
+        createPost(ad, msg, dealer)
         ad.isModified = False
         ad.save()
 
-def postDiscountAds():
-    ads = models.Ad.objects.filter(isModified=True)
+def postDiscountAds(dealer):
+    ads = models.Ad.objects.filter(isModified=True, fk_dealer=dealer)
     for ad in ads:
         if ad.price < ad.lastPrice:
             msg = f"""💲💲💲{boldText("PROMOTION EXCEPTIONNELLE")} 💲💲💲\n\nLe prix de ce modèle de {boldText(ad.model)} est maintenant à {boldText(formatNumber(ad.price)+" €")} au lieu de {boldText(formatNumber(ad.lastPrice)+" €")} \n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-            createPost(ad, msg)
+            createPost(ad, msg, dealer)
             ad.isModified = False
             ad.save()
+
+def createTestPost(dealer, scenario):
+
+        if scenario == 0:
+            ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+            msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+            createPost(ad, msg, dealer)
+        
+        elif scenario == 1:
+            ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+            createSoldPicture(ad)
+            msg = f"""🚗🚗🚗{boldText("VEHICULE VENDU")}🚗🚗🚗\n\nFélicitation à l'acheteur de ce modèle {ad.model} pour son acquisition !\n\nVous pouvez retrouver l'ensemble de notre stock sur {ad.fk_dealer.url}"""
+            uploadPictureFromLocal("media/modifiedFile.jpg", msg, dealer)
+        
+        elif scenario == 2:
+            ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+            msg = f"""🚨🚨🚨{boldText("TOUJOURS DISPONIBLE")} 🚨🚨🚨\n\nCe modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")} est toujours disponible\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+            createPost(ad, msg, dealer)
+
+        elif scenario == 3:
+            ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+            msg = f"""💲💲💲{boldText("PROMOTION EXCEPTIONNELLE")} 💲💲💲\n\nLe prix de ce modèle de {boldText(ad.model)} est maintenant à {boldText(formatNumber(ad.price-2000)+" €")} au lieu de {boldText(formatNumber(ad.price)+" €")} \n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+            createPost(ad, msg, dealer)
+
+        elif scenario == 4:
+            ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+            msg = f"""❗❗❗{boldText("MODIFICATION D'ANNONCE")} ❗❗❗\n\nDes modifications ont été apportées à la fiche technique de ce modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+            createPost(ad, msg, dealer)
+
+        elif scenario == 5:
+            ads = models.Ad.objects.filter(fk_dealer=dealer)
+            lines = []
+            for ad in ads:
+                line = f"""{boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Pour + d'infos")} : {ad.url}\n{"-"*50}\n"""
+                lines.append(line)
+            lines.append(f"""\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}""")
+            lines.append(f"""\n{boldText("Stock complet")} : {ad.fk_dealer.url}""")
+            lines = "\n".join(lines)
+            msg = f"🚨🚨🚨{boldText('Recapitulatif de nos modeles en stock')}🚨🚨🚨\n\n{lines}"
+            createRecap(msg, dealer)
 
 def scheduledTask():
     dealers = models.Dealer.objects.all()
@@ -411,25 +504,24 @@ def scheduledTask():
             ad.save()
         for ad in adsToAdd:
             createAd(ad)
-        # for ads in adsToEdit:
-        #     ads["newAd"]["isModified"] = True
-        #     ad = models.Ad.objects.get(id=ads["oldAd"].id)
-        #     ad.lastPrice = ad.price
-        #     ad.save()
-        #     models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
+        for ads in adsToEdit:
+            ads["newAd"]["isModified"] = True
+            ad = models.Ad.objects.get(id=ads["oldAd"].id)
+            ad.lastPrice = ad.price
+            ad.save()
+            models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
 
-        # if dealer.fk_settings.createDiscountCarPost:
-        #     postDiscountAds()
-        # if dealer.fk_settings.createModifiedPost:
-        #     postEditedAds()
-
+        if dealer.fk_settings.createDiscountCarPost:
+            postDiscountAds(dealer)
+        if dealer.fk_settings.createModifiedPost:
+            postEditedAds(dealer)
 
         if dealer.fk_settings.createNewCarPost:
-            postNewAds()
+            postNewAds(dealer)
         if dealer.fk_settings.createSoldCarPost:
-            postSoldAds()
-        # if dealer.fk_settings.createOldCarPost:
-        #     reuploadAds(dealer.fk_settings.oldCarPostDelay)
-        # if dealer.fk_settings.createSummaryPost:
-        #     postAdsRecap(dealer.fk_settings.summaryPostDelay) 
+            postSoldAds(dealer)
+        if dealer.fk_settings.createOldCarPost:
+            reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
+        if dealer.fk_settings.createSummaryPost:
+            postAdsRecap(dealer.fk_settings.summaryPostDelay, dealer) 
 
