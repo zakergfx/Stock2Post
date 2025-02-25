@@ -24,13 +24,24 @@ function MainPage() {
 
     const [dealerInfos, setDealerInfos] = useState()
 
+    async function testingPost(e) {
+        e.preventDefault()
+        const success = (await Api.fetchPost("/api/testing/", { "scenario": parseInt(e.target.id) })).success
+        if (success){
+            Alert.success("Le post a bien été créé.")
+        }
+        else{
+            Alert.error("Le post n'a pas pu être créé.")
+        }
+    }
+
     // récupération infos dealers
     useEffect(() => {
         async function fetchData() {
-            const data = (await Api.fetchGet("/api/dealers/selectauto/")).detail
-            setDealerInfos(data)
+            const infos = (await Api.fetchGet(`/api/me`)).detail
 
-            console.log(data)
+            const data = (await Api.fetchGet(`/api/dealers/${infos.user}/`)).detail
+            setDealerInfos(data)
 
             setEnablePageManagement(data.fk_settings.pageIsManaged)
             setEnablePostNewCar(data.fk_settings.createNewCarPost)
@@ -62,11 +73,11 @@ function MainPage() {
             "summaryPostDelay": summaryHz
         }
 
-        const response = await Api.fetchPatch("/api/dealers/selectauto/settings/", settings)
-        if (response.success){
+        const response = await Api.fetchPatch(`/api/dealers/${dealerInfos.name}/settings/`, settings)
+        if (response.success) {
             Alert.success("Sauvegarde effectuée !")
         }
-        else{
+        else {
             Alert.error("Erreur lors de la sauvegarde des paramètres !")
         }
 
@@ -80,10 +91,11 @@ function MainPage() {
                 <form>
                     <b>Fonctionnalités</b>
                     <b>Activé</b>
+                    <b>Test</b>
 
                     <label>Activer la gestion de ma page</label>
                     <input checked={enablePageManagemenent} onChange={() => setEnablePageManagement(!enablePageManagemenent)} type="checkbox"></input>
-
+                    <span></span>
                     {enablePageManagemenent &&
                         <>
                             <label>
@@ -95,6 +107,7 @@ function MainPage() {
                                 checked={enablePostNewCar}
                                 onChange={() => setEnablePostNewCar(!enablePostNewCar)}
                             />
+                            <button id="0" onClick={testingPost}>Tester</button>
 
                             <label>
                                 Créer un post quand un véhicule a été vendu
@@ -105,6 +118,8 @@ function MainPage() {
                                 checked={enablePostSoldCar}
                                 onChange={() => setEnablePostSoldCar(!enablePostSoldCar)}
                             />
+                            <button id="1" onClick={testingPost}>Tester</button>
+
 
                             <label>
                                 Créer un post quand un véhicule présent dans le catalogue depuis <b>{oldCarHz}</b> semaines n'a pas encore été vendu
@@ -115,7 +130,8 @@ function MainPage() {
                                 checked={enablePostOldCar}
                                 onChange={() => setEnablePostOldCar(!enablePostOldCar)}
                             />
-                            {enablePostOldCar &&
+                            <button id="2" onClick={testingPost}>Tester</button>
+                            {enablePostOldCar ?
                                 <>
                                     <label className="Secondary">
                                         Nombre de semaines
@@ -133,7 +149,8 @@ function MainPage() {
                                         <option value="10">10</option>
                                         <option value="11">11</option>
                                         <option value="12">12</option>
-                                    </select> </>}
+                                    </select> </>:<><span/><span/></>}
+                            <span></span>
 
 
 
@@ -146,6 +163,7 @@ function MainPage() {
                                 checked={enablePostDiscount}
                                 onChange={() => setEnablePostDiscount(!enablePostDiscount)}
                             />
+                            <button id="3" onClick={testingPost}>Tester</button>
 
                             <label>
                                 Créer un post quand une modification de la fiche technique d'un véhicule a lieu
@@ -156,6 +174,8 @@ function MainPage() {
                                 checked={enableModifiedPost}
                                 onChange={() => setEnableModifiedPost(!enableModifiedPost)}
                             />
+                            <button id="4" onClick={testingPost}>Tester</button>
+
                             <label>
                                 Créer un post récapitulatif du stock toutes les <b>{summaryHz}</b> semaines
 
@@ -165,12 +185,12 @@ function MainPage() {
                                 checked={enablePostStockSummary}
                                 onChange={() => setEnablePostStockSummary(!enablePostStockSummary)}
                             />
+                            <button id="5" onClick={testingPost}>Tester</button>
 
-                            {enablePostStockSummary && <>
+                            {enablePostStockSummary ? <>
                                 <label className="Secondary">
                                     Nombre de semaines
                                 </label>
-
                                 <select value={summaryHz} onChange={(e) => setSummaryHz(e.target.value)}>
                                     <option value="1">1</option>
                                     <option value="2">2</option>
@@ -184,7 +204,7 @@ function MainPage() {
                                     <option value="10">10</option>
                                     <option value="11">11</option>
                                     <option value="12">12</option>
-                                </select> </>}
+                                </select> </>:<><span/><span/></>}
 
                         </>
                     }
@@ -193,7 +213,6 @@ function MainPage() {
             </div>
 
         </div>}
-        {/* <FacebookLoginButton></FacebookLoginButton> */}
     </div>)
 
 

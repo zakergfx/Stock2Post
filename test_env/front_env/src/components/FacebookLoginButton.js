@@ -20,13 +20,19 @@ function FacebookLoginButton() {
   };
 
   async function login(userToken) {
+    // récupération user id
+    let response = await fetch(`https://graph.facebook.com/v22.0/me?access_token=${userToken}&fields=id,name`)
+    const userId = (await response.json()).id
+
     // récupération long user token
-    let response = await fetch(`https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=REMOVED_FACEBOOK_APP_ID&client_secret=cf4ad9d1e6a0f5b315bbd17d7e407e00&fb_exchange_token=${userToken}`)
+    response = await fetch(`https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=REMOVED_FACEBOOK_APP_ID&client_secret=cf4ad9d1e6a0f5b315bbd17d7e407e00&fb_exchange_token=${userToken}`)
     const longUserToken = (await response.json()).access_token
 
     //récupération long page token
-    response = await fetch(`https://graph.facebook.com/v22.0/8576094222494650/accounts?access_token=${longUserToken}`)
+    response = await fetch(`https://graph.facebook.com/v22.0/${userId}/accounts?access_token=${longUserToken}`)
     const data = (await response.json()).data
+
+    console.log(data)
 
     // vérification que l'user a choisi une seule page
     if (data.length === 1) {
@@ -60,12 +66,11 @@ function FacebookLoginButton() {
 
   return (
     <div>
-      <h2>Connexion avec Facebook</h2>
       <FacebookLogin
         appId="REMOVED_FACEBOOK_APP_ID"  // Remplacez par votre App ID Facebook
         autoLoad={false}
         fields="name,email,picture"
-        scope="read_insights,pages_show_list,pages_read_engagement,pages_manage_posts"
+        scope="email,pages_show_list,pages_read_engagement,pages_manage_posts,public_profile"
         callback={responseFacebook}
         icon="fa-facebook"
         textButton="Se connecter avec Facebook"

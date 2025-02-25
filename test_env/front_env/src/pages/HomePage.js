@@ -7,8 +7,8 @@ function HomePage() {
     return (<div className="HomePage">
         <div className="Content">
             <div className="Title">
-                <img src="https://i.ibb.co/TDqkqNpy/favic.png"></img>
-                <h1>Gagnez du temps via la de gestion automatisée de vos réseaux sociaux.</h1>
+                {/* <img src="https://i.ibb.co/TDqkqNpy/favic.png"></img> */}
+                <h1>AutoShare - Gagnez du temps via la de gestion automatisée de vos réseaux sociaux.</h1>
             </div>
             <h2>AutoShare synchronise votre page Facebook avec votre stock Autoscout, sans que vous n'ayez rien à faire.</h2>
             <h2>Pourquoi choisir AutoShare ?</h2>

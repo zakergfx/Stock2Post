@@ -35,7 +35,7 @@ DEBUG = True
 
 # Configuration pour ajuster la durée de validité du token
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),  # Par exemple, 1 heure pour l'access token
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Par exemple, 1 heure pour l'access token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Par exemple, 7 jours pour le refresh token
     'ROTATE_REFRESH_TOKENS': False,                   # Si tu ne veux pas faire tourner les tokens de rafraîchissement
     'BLACKLIST_AFTER_ROTATION': False,                # Si tu veux blacklister les tokens après rotation
@@ -46,14 +46,52 @@ SIMPLE_JWT = {
     'ISSUER': None,
 }
 
-
-
 ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://app.loicktest.be',
     'https://vpsapp.loicktest.be'
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': 'django_errors.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file', 'console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'myapp': {
+            'handlers': ['file'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
+    },
+}
 
 # Application definition
 CELERY_BROKER_URL = "pyamqp://as_rabbitmq:5672"
