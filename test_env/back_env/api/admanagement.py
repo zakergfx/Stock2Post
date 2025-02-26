@@ -1,4 +1,4 @@
-import requests, time, json
+import requests, time, json, os
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
@@ -16,7 +16,8 @@ BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
     # scheduledTask()
-    createVideo()
+    dealer = models.Dealer.objects.first()
+    publishVideo(dealer)
 
 def cleanFbPage():
     dealers = models.Dealer.objects.all()
@@ -25,7 +26,6 @@ def cleanFbPage():
         headers = {"Authorization": f"OAuth {dealer.token}"}
         response = requests.get(url, headers=headers).json()
 
-        
         for line in response:
             url = f"{BASEURL}/{dealer.fbId}_{line['id'].split('_')[1]}"
             response = requests.delete(url, headers=headers)
@@ -79,7 +79,7 @@ def putStats(rect_top, largeur, textes, draw):
 
     # Pas besoin de retourner quoi que ce soit car draw modifie directement img_pil
 
-def createVideo():
+def createVideo(ad):
     sortie = "media/diaporama.avi"
     fps = 30  # Augmenter les FPS pour des transitions plus fluides
     duree_par_image = 3
@@ -91,16 +91,15 @@ def createVideo():
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video = cv2.VideoWriter(sortie, fourcc, fps, taille)
 
-    images_url = [
-        "https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_74047cad-821c-4ae9-853c-6edccc266b6e.jpg/1920x1080.webp",
-        "https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_3ecd735a-b585-4831-894a-22008f19ac93.jpg/1920x1080.webp"
-    ]
-    
+    images_url = ad.pictures.split("-----")
+    if len(images_url) > 10:
+        images_url = image_url[:10]
+
     # Préparer toutes les images finales en avance
     final_images = []
     
     for image_url in images_url:
-        final_image = create_slide(image_url, hauteur, largeur)
+        final_image = create_slide(ad, image_url, hauteur, largeur)
         final_images.append(final_image)
     
     # Ajouter les images à la vidéo avec transitions
@@ -128,7 +127,7 @@ def createVideo():
     video.release()
     print(f"Diaporama créé avec succès : {sortie}")
 
-def create_slide(image_url, hauteur, largeur):
+def create_slide(ad, image_url, hauteur, largeur):
     """Crée une diapositive complète avec l'image et tous les textes"""
     img = download_image(image_url)
     
@@ -179,10 +178,10 @@ def create_slide(image_url, hauteur, largeur):
     draw = ImageDraw.Draw(img_pil)
 
     # Ajouter le titre
-    texte = "Audi A6"
+    texte = ad.model
     font_path = "arial.ttf"
     try:
-        font = ImageFont.truetype(font_path, 80)
+        font = ImageFont.truetype(font_path, 70)
     except IOError:
         print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
         font = ImageFont.load_default()
@@ -218,7 +217,7 @@ def create_slide(image_url, hauteur, largeur):
         print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
         font = ImageFont.load_default()
 
-    description = "1.5 T5 PHEV RECHARGE PRO MEM. SEAT/PARK ASSIST/CAR"
+    description = ad.description
     if len(description) > 35:
         description = description[:45] + "..."
     text_bbox = draw.textbbox((0, 0), description, font=font)
@@ -231,12 +230,12 @@ def create_slide(image_url, hauteur, largeur):
     # Ajouter le prix
     font_path = "arialbd.ttf"
     try:
-        font = ImageFont.truetype(font_path, 80)
+        font = ImageFont.truetype(font_path, 70)
     except IOError:
         print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
         font = ImageFont.load_default()
 
-    price = "14 642 €"
+    price = f"{formatNumber(ad.price)} €"
     text_bbox = draw.textbbox((0, 0), price, font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
@@ -252,7 +251,7 @@ def create_slide(image_url, hauteur, largeur):
         print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
         font = ImageFont.load_default()
 
-    contact = "0477 26 19 90 - REMOVED_EMAIL"
+    contact = f"{ad.fk_dealer.phone} - {ad.fk_dealer.mail}"
     text_bbox = draw.textbbox((0, 0), contact , font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
@@ -268,7 +267,7 @@ def create_slide(image_url, hauteur, largeur):
         print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
         font = ImageFont.load_default()
 
-    company = "- SelectAuto- "
+    company = f"- {ad.fk_dealer.name.upper()} -"
     text_bbox = draw.textbbox((0, 0), company, font=font)
     text_width = text_bbox[2] - text_bbox[0]
     text_height = text_bbox[3] - text_bbox[1]
@@ -277,7 +276,9 @@ def create_slide(image_url, hauteur, largeur):
     draw.text((x, y), company, fill=(100, 100, 100), font=font)
 
     # Ajouter les statistiques
-    stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
+    # stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
+    stats = [ad.fuel, ad.release, f'{ad.ch} ch', "Automatique" if ad.isAutomatic else "Manuel" , f"{formatNumber(ad.km)} km", "Garantie 12 mois"]
+    print(stats)
     putStats(rect_top, largeur, stats, draw)
 
     # Convertir l'image PIL en tableau numpy pour OpenCV
@@ -451,7 +452,7 @@ def createAdDict(url):
 
     # ajout des images
 
-    pictures = soup.find_all(class_="image-gallery-thumbnail-image")[:1]
+    pictures = soup.find_all(class_="image-gallery-thumbnail-image")[:3]
     ad["pictures"] = "-----".join([picture.get("src").replace("120x90.jpg", "1920x1080.webp") for picture in pictures])
 
   
@@ -598,6 +599,42 @@ def postNewAds(dealer):
         msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
         createPost(ad, msg, dealer)
 
+def postNewAdsStory(dealer):
+    ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
+    for ad in ads:
+        createVideo(ad)
+        publishVideo(dealer)
+
+
+def publishVideo(dealer):
+    # start upload session
+    url = f"https://graph.facebook.com/v22.0/{dealer.fbId}/video_stories"
+    headers = {"Authorization": f"OAuth {dealer.token}"}
+    body = {"upload_phase": "start"}
+
+    response = requests.post(url=url, json=body, headers=headers)
+    videoId = response.json()["video_id"]
+
+    # upload the video
+    url = f"https://rupload.facebook.com/video-upload/v22.0/{videoId}"
+    videoPath = "media/diaporama.avi"
+    headers = {"Authorization": f"OAuth {dealer.token}", "offset": "0", "file_size": str(os.path.getsize(videoPath)), "Content-Type": "video/mp4"}
+
+    with open(videoPath, "rb") as f:
+        response = requests.post(url=url, json=body, headers=headers, data=f)
+        response = response.json()
+
+    # publish as story
+    url = f"https://graph.facebook.com/v22.0/{dealer.fbId}/video_stories"
+    headers = {"Authorization": f"OAuth {dealer.token}"}
+    body = {"video_id": videoId, "upload_phase": "finish"}
+
+    response = requests.post(url=url, json=body, headers=headers)
+
+    if response.status_code == 200:
+        print("upload story success")
+
+
 def reuploadAds(weeks, dealer):
     ads = models.Ad.objects.filter(isPublished=True, fk_dealer=dealer)
     for ad in ads:
@@ -654,7 +691,6 @@ def postDiscountAds(dealer):
             ad.save()
 
 def createTestPost(dealer, scenario):
-
         if scenario == 0:
             ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
             msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release.split("/")[0]}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
@@ -693,6 +729,12 @@ def createTestPost(dealer, scenario):
             msg = f"🚨🚨🚨{boldText('Recapitulatif de nos modeles en stock')}🚨🚨🚨\n\n{lines}"
             createRecap(msg, dealer)
 
+        elif scenario == 6:
+            ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+            createVideo(ad)
+            publishVideo(ad.fk_dealer)
+
+
 def scheduledTask():
     dealers = models.Dealer.objects.all()
     for dealer in dealers:
@@ -714,8 +756,13 @@ def scheduledTask():
         if dealer.fk_settings.createModifiedPost:
             postEditedAds(dealer)
 
+
+        if dealer.fk_settings.createNewCarStory:
+            postNewAdsStory(dealer)
         if dealer.fk_settings.createNewCarPost:
             postNewAds(dealer)
+
+
         if dealer.fk_settings.createSoldCarPost:
             postSoldAds(dealer)
         if dealer.fk_settings.createOldCarPost:

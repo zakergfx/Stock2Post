@@ -11,6 +11,8 @@ function MainPage() {
     const [enablePageManagemenent, setEnablePageManagement] = useState()
 
     const [enablePostNewCar, setEnablePostNewCar] = useState()
+    const [enablePostNewCarStory, setEnablePostNewCarStory] = useState()
+
     const [enablePostSoldCar, setEnablePostSoldCar] = useState()
 
     const [enablePostOldCar, setEnablePostOldCar] = useState()
@@ -45,6 +47,7 @@ function MainPage() {
 
             setEnablePageManagement(data.fk_settings.pageIsManaged)
             setEnablePostNewCar(data.fk_settings.createNewCarPost)
+            setEnablePostNewCarStory(data.fk_settings.createNewCarStory)
             setEnablePostOldCar(data.fk_settings.createOldCarPost)
             setEnablePostSoldCar(data.fk_settings.createSoldCarPost)
             setEnablePostDiscount(data.fk_settings.createDiscountCarPost)
@@ -66,6 +69,7 @@ function MainPage() {
             "createNewCarPost": enablePostNewCar,
             "createOldCarPost": enablePostOldCar,
             "createSoldCarPost": enablePostSoldCar,
+            "createNewCarStory": enablePostNewCarStory,
             "createDiscountCarPost": enablePostDiscount,
             "createModifiedPost": enableModifiedPost,
             "createSummaryPost": enablePostStockSummary,
@@ -100,7 +104,6 @@ function MainPage() {
                         <>
                             <label>
                                 Créer un post quand un véhicule est ajouté à votre catalogue
-
                             </label>
                             <input
                                 type="checkbox"
@@ -109,10 +112,26 @@ function MainPage() {
                             />
                             <button id="0" onClick={testingPost}>Tester</button>
 
+                            {enablePostNewCar && <>
+                            <label className="Secondary">
+                                Publier également en tant que Story
+                            </label>
+                            <input
+                                type="checkbox"
+                                checked={enablePostNewCarStory}
+                                onChange={() => setEnablePostNewCarStory(!enablePostNewCarStory)}
+                            />
+                            <button id="6" onClick={testingPost}>Tester</button>
+
+                        </>}
+
                             <label>
                                 Créer un post quand un véhicule a été vendu
 
                             </label>
+
+                       
+
                             <input
                                 type="checkbox"
                                 checked={enablePostSoldCar}

@@ -4,6 +4,7 @@ from django.conf import settings
 class Settings(models.Model):
     pageIsManaged = models.BooleanField(default=False)
     createNewCarPost = models.BooleanField(default=False)
+    createNewCarStory = models.BooleanField(default=False)
     createSoldCarPost = models.BooleanField(default=False)
     createOldCarPost = models.BooleanField(default=False)
     createDiscountCarPost = models.BooleanField(default=False)
