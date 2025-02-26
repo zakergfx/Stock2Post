@@ -18,9 +18,6 @@ def testing():
     # scheduledTask()
     createVideo()
 
-
-
-
 def cleanFbPage():
     dealers = models.Dealer.objects.all()
     for dealer in dealers:
@@ -35,122 +32,150 @@ def cleanFbPage():
 
         print("suppression ok")
 
-def putStats(img, rect_top, largeur, textes):
+def download_image(url):
+    """Télécharge une image à partir d'une URL et renvoie l'image sous forme de tableau NumPy."""
+    response = requests.get(url)
+    if response.status_code == 200:
+        # Convertir les données de l'image en un tableau NumPy
+        img_array = np.frombuffer(response.content, np.uint8)
+        img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        return img
+    else:
+        print(f"Erreur lors du téléchargement de l'image : {url}")
+        return None
 
-    font = cv2.FONT_HERSHEY_DUPLEX
-    font_scale = 1.5
-    font_thickness = 2
+def putStats(img, rect_top, largeur, textes, draw):
+    font_path = "arial.ttf"  # Changez ceci si nécessaire
+    try:
+        font = ImageFont.truetype(font_path, 40)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    # Utiliser l'objet draw passé en paramètre pour dessiner
     texte_couleur = (0, 0, 0)  # Noir
 
     for i, texte in enumerate(textes[:3]):
-        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+        text_bbox = draw.textbbox((0, 0), texte, font=font)
+        text_width = text_bbox[2] - text_bbox[0]  # largeur
+        text_height = text_bbox[3] - text_bbox[1]  # hauteur
         x = 100
-        y = 200 + rect_top + text_height + 100*i
-        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+        y = 250 + rect_top + text_height + 100 * i
+        draw.text((x, y), texte, fill=texte_couleur, font=font)
 
     for i, texte in enumerate(textes[3:]):
-        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
-        x = largeur-text_width-100
-        y = 200 + rect_top + text_height + 100*i
-        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+        text_bbox = draw.textbbox((0, 0), texte, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
+        x = largeur - text_width - 100
+        y = 250 + rect_top + text_height + 100 * i
+        draw.text((x, y), texte, fill=texte_couleur, font=font)
+
+    return img  # Retourner l'image modifiée
 
 def createVideo():
-    images = ["media/modifiedFile.jpg", "media/originalFile.jpg"]
+    images = ["https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_74047cad-821c-4ae9-853c-6edccc266b6e.jpg/1920x1080.webp", "https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_3ecd735a-b585-4831-894a-22008f19ac93.jpg/1920x1080.webp"]
     sortie = "media/diaporama.avi"
     fps = 1
     duree_par_image = 3
 
-    # Lire la première image pour obtenir la taille
-    # premiere_image = cv2.imread(images[0])
-
-    # hauteur, largeur, _ = premiere_image.shape
     hauteur, largeur = 1920, 1080
     taille = (largeur, hauteur)
 
-    # Créer l'objet VideoWriter
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video = cv2.VideoWriter(sortie, fourcc, fps, taille)
 
-    # Nombre d'images répétées pour chaque photo
     repetitions = fps * duree_par_image  
 
     for image in images:
-        img = cv2.imread(image)
+        img = download_image(image)
         if img is None:
             print(f"Impossible de lire {image}, saut de cette image.")
             continue
 
-        img = cv2.resize(img, taille)  # Redimensionner si nécessaire
+        img = cv2.resize(img, taille)
 
         # Ajouter un rectangle blanc en bas
         overlay = img.copy()
         alpha = 1
 
-        rect_top = int(hauteur * 5.5/10)  # Premier tiers du bas
+        rect_top = int(hauteur * 5.5 / 10)
         rect_bottom = hauteur
-        rect_color = (255, 255, 255)  # Blanc
+        rect_color = (255, 255, 255)
 
-        cv2.rectangle(overlay, (0, rect_top), (largeur, rect_bottom), rect_color, -1)  # Dessin du rectangle
-        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img) 
+        cv2.rectangle(overlay, (0, rect_top), (largeur, rect_bottom), rect_color, -1)
+        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
 
         # Ajouter un rectangle gris en bas
         overlay = img.copy()
         alpha = 1
 
-        rect2_top = int(hauteur * 8.5/10)  # Premier tiers du bas
-        rect2_bottom = hauteur-100
-        rect2_color = (225, 225, 225)  # Gris
+        rect2_top = int(hauteur * 8.5 / 10)
+        rect2_bottom = hauteur - 100
+        rect2_color = (225, 225, 225)
 
-        cv2.rectangle(overlay, (100, rect2_top), (largeur-100, rect2_bottom), rect2_color, -1)  # Dessin du rectangle
-        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img) 
+        cv2.rectangle(overlay, (100, rect2_top), (largeur - 100, rect2_bottom), rect2_color, -1)
+        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
 
         # Ajouter le titre
         texte = "Audi A6"
-        font = cv2.FONT_HERSHEY_DUPLEX
-        font_scale = 2
-        font_thickness = 5
-        texte_couleur = (0, 0, 0)  # Noir
+        font_path = "arial.ttf"  # Changez ceci si nécessaire
+        try:
+            font = ImageFont.truetype(font_path, 80)
+        except IOError:
+            print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+            font = ImageFont.load_default()
 
-        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+        img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        draw = ImageDraw.Draw(img_pil)
+
+        text_bbox = draw.textbbox((0, 0), texte, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
         x = 100
         y = rect_top + text_height + 25
-
-        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+        draw.text((x, y), texte, fill=(0, 0, 0), font=font)
 
         # Ajouter description
+        font_path = "arial.ttf"  # Changez ceci si nécessaire
+        try:
+            font = ImageFont.truetype(font_path, 32)
+        except IOError:
+            print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+            font = ImageFont.load_default()
+
         texte = "1.5 T5 PHEV RECHARGE PRO MEM. SEAT/PARK ASSIST/CAR"
         if len(texte) > 45:
-            texte = texte[:45]+"..."
-        font = cv2.FONT_HERSHEY_DUPLEX
-        font_scale = 1
-        font_thickness = 3
-        texte_couleur = (75, 75, 75)  # gris
-
-        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+            texte = texte[:45] + "..."
+        text_bbox = draw.textbbox((0, 0), texte, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
         x = 100
-        y = rect_top + text_height + 100
-
-        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+        y = rect_top + text_height + 150
+        draw.text((x, y), texte, fill=(75, 75, 75), font=font)
 
         # Ajouter le prix
-        texte = "14 642 EUR"
-        font = cv2.FONT_HERSHEY_DUPLEX
-        font_scale = 2
-        font_thickness = 5
-        texte_couleur = (0, 0, 0)  # Noir
+        font_path = "arial.ttf"  # Changez ceci si nécessaire
+        try:
+            font = ImageFont.truetype(font_path, 80)
+        except IOError:
+            print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+            font = ImageFont.load_default()
 
-        # Calculer la taille du texte
-        (text_width, text_height), baseline = cv2.getTextSize(texte, font, font_scale, font_thickness)
-
-        # Calculer les coordonnées pour centrer le texte
+        texte = "14 642 €"
+        text_bbox = draw.textbbox((0, 0), texte, font=font)
+        text_width = text_bbox[2] - text_bbox[0]
+        text_height = text_bbox[3] - text_bbox[1]
         x = (largeur - text_width) // 2
-        y = rect2_top + (rect2_bottom - rect2_top + text_height) // 2 + baseline // 2
-
-        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+        y = rect2_top + (rect2_bottom - rect2_top - text_height) // 2
+        draw.text((x, y), texte, fill=(0, 0, 0), font=font)
 
         # ajout stats
         stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
-        putStats(img, rect_top, largeur, stats)
+        img = putStats(img, rect_top, largeur, stats, draw)
+
+        # Convertir l'image PIL en tableau numpy pour OpenCV
+        img = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
 
         # Ajouter la même image plusieurs fois pour respecter la durée
         for _ in range(repetitions):
@@ -158,7 +183,6 @@ def createVideo():
 
     video.release()
     print(f"Diaporama créé avec succès : {sortie}")
-
 
 def addImageToImage(imagePath, overlayPath, outputPath, position=None):
     # Ouvre les images
