@@ -35,56 +35,129 @@ def cleanFbPage():
 
         print("suppression ok")
 
+def putStats(img, rect_top, largeur, textes):
+
+    font = cv2.FONT_HERSHEY_DUPLEX
+    font_scale = 1.5
+    font_thickness = 2
+    texte_couleur = (0, 0, 0)  # Noir
+
+    for i, texte in enumerate(textes[:3]):
+        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+        x = 100
+        y = 200 + rect_top + text_height + 100*i
+        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+
+    for i, texte in enumerate(textes[3:]):
+        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+        x = largeur-text_width-100
+        y = 200 + rect_top + text_height + 100*i
+        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
 
 def createVideo():
     images = ["media/modifiedFile.jpg", "media/originalFile.jpg"]
-   # Paramètres de la vidéo
-    fps = 1  # Images par seconde
-    duration_per_image = 3  # Durée d'affichage de chaque image (en secondes)
-    frame_size = (640, 480)  # Taille de la vidéo
-    output_file = "diaporama.avi"
+    sortie = "media/diaporama.avi"
+    fps = 1
+    duree_par_image = 3
 
-    # Création du writer vidéo
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    video = cv2.VideoWriter(output_file, fourcc, fps, frame_size)
+    # Lire la première image pour obtenir la taille
+    # premiere_image = cv2.imread(images[0])
 
-    for image_path in images:
-        img = cv2.imread(image_path)
-        
+    # hauteur, largeur, _ = premiere_image.shape
+    hauteur, largeur = 1920, 1080
+    taille = (largeur, hauteur)
+
+    # Créer l'objet VideoWriter
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    video = cv2.VideoWriter(sortie, fourcc, fps, taille)
+
+    # Nombre d'images répétées pour chaque photo
+    repetitions = fps * duree_par_image  
+
+    for image in images:
+        img = cv2.imread(image)
         if img is None:
-            print(f"Erreur : Impossible de charger {image_path}")
+            print(f"Impossible de lire {image}, saut de cette image.")
             continue
-        
-        img = cv2.resize(img, frame_size)  # Redimensionner l'image
-        
-        # Ajouter du texte "test" au centre
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        text = "test"
+
+        img = cv2.resize(img, taille)  # Redimensionner si nécessaire
+
+        # Ajouter un rectangle blanc en bas
+        overlay = img.copy()
+        alpha = 1
+
+        rect_top = int(hauteur * 5.5/10)  # Premier tiers du bas
+        rect_bottom = hauteur
+        rect_color = (255, 255, 255)  # Blanc
+
+        cv2.rectangle(overlay, (0, rect_top), (largeur, rect_bottom), rect_color, -1)  # Dessin du rectangle
+        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img) 
+
+        # Ajouter un rectangle gris en bas
+        overlay = img.copy()
+        alpha = 1
+
+        rect2_top = int(hauteur * 8.5/10)  # Premier tiers du bas
+        rect2_bottom = hauteur-100
+        rect2_color = (225, 225, 225)  # Gris
+
+        cv2.rectangle(overlay, (100, rect2_top), (largeur-100, rect2_bottom), rect2_color, -1)  # Dessin du rectangle
+        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img) 
+
+        # Ajouter le titre
+        texte = "Audi A6"
+        font = cv2.FONT_HERSHEY_DUPLEX
         font_scale = 2
         font_thickness = 5
-        text_color = (255, 255, 255)  # Blanc
-        outline_color = (0, 0, 0)  # Noir
+        texte_couleur = (0, 0, 0)  # Noir
 
-        # Obtenir la taille du texte pour le centrer
-        text_size = cv2.getTextSize(text, font, font_scale, font_thickness)[0]
-        text_x = (frame_size[0] - text_size[0]) // 2
-        text_y = (frame_size[1] + text_size[1]) // 2
+        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+        x = 100
+        y = rect_top + text_height + 25
 
-        # Ajouter un contour noir pour la lisibilité
-        for dx, dy in [(-2, -2), (-2, 2), (2, -2), (2, 2)]:  # 4 coins autour du texte
-            cv2.putText(img, text, (text_x + dx, text_y + dy), font, font_scale, outline_color, font_thickness)
+        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
 
-        # Ajouter le texte en blanc
-        cv2.putText(img, text, (text_x, text_y), font, font_scale, text_color, font_thickness)
+        # Ajouter description
+        texte = "1.5 T5 PHEV RECHARGE PRO MEM. SEAT/PARK ASSIST/CAR"
+        if len(texte) > 45:
+            texte = texte[:45]+"..."
+        font = cv2.FONT_HERSHEY_DUPLEX
+        font_scale = 1
+        font_thickness = 3
+        texte_couleur = (75, 75, 75)  # gris
 
-        # Ajouter plusieurs copies de l'image pour créer un effet de pause
-        for _ in range(fps * duration_per_image):
+        (text_width, text_height), _ = cv2.getTextSize(texte, font, font_scale, font_thickness)
+        x = 100
+        y = rect_top + text_height + 100
+
+        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+
+        # Ajouter le prix
+        texte = "14 642 EUR"
+        font = cv2.FONT_HERSHEY_DUPLEX
+        font_scale = 2
+        font_thickness = 5
+        texte_couleur = (0, 0, 0)  # Noir
+
+        # Calculer la taille du texte
+        (text_width, text_height), baseline = cv2.getTextSize(texte, font, font_scale, font_thickness)
+
+        # Calculer les coordonnées pour centrer le texte
+        x = (largeur - text_width) // 2
+        y = rect2_top + (rect2_bottom - rect2_top + text_height) // 2 + baseline // 2
+
+        cv2.putText(img, texte, (x, y), font, font_scale, texte_couleur, font_thickness, cv2.LINE_AA)
+
+        # ajout stats
+        stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
+        putStats(img, rect_top, largeur, stats)
+
+        # Ajouter la même image plusieurs fois pour respecter la durée
+        for _ in range(repetitions):
             video.write(img)
 
     video.release()
-    cv2.destroyAllWindows()
-
-    print(f"Vidéo créée avec succès : {output_file}")
+    print(f"Diaporama créé avec succès : {sortie}")
 
 
 def addImageToImage(imagePath, overlayPath, outputPath, position=None):
