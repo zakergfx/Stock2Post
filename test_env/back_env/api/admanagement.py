@@ -44,7 +44,11 @@ def download_image(url):
         print(f"Erreur lors du téléchargement de l'image : {url}")
         return None
 
-def putStats(img, rect_top, largeur, textes, draw):
+def putStats(rect_top, largeur, textes, draw):
+    """
+    Ajoute des statistiques sur l'image en utilisant l'objet draw.
+    Cette fonction modifie directement l'objet draw qui affecte img_pil.
+    """
     font_path = "arial.ttf"  # Changez ceci si nécessaire
     try:
         font = ImageFont.truetype(font_path, 40)
@@ -55,6 +59,7 @@ def putStats(img, rect_top, largeur, textes, draw):
     # Utiliser l'objet draw passé en paramètre pour dessiner
     texte_couleur = (0, 0, 0)  # Noir
 
+    # Dessiner les trois premiers textes à gauche
     for i, texte in enumerate(textes[:3]):
         text_bbox = draw.textbbox((0, 0), texte, font=font)
         text_width = text_bbox[2] - text_bbox[0]  # largeur
@@ -63,6 +68,7 @@ def putStats(img, rect_top, largeur, textes, draw):
         y = 250 + rect_top + text_height + 100 * i
         draw.text((x, y), texte, fill=texte_couleur, font=font)
 
+    # Dessiner les trois derniers textes à droite
     for i, texte in enumerate(textes[3:]):
         text_bbox = draw.textbbox((0, 0), texte, font=font)
         text_width = text_bbox[2] - text_bbox[0]
@@ -71,13 +77,13 @@ def putStats(img, rect_top, largeur, textes, draw):
         y = 250 + rect_top + text_height + 100 * i
         draw.text((x, y), texte, fill=texte_couleur, font=font)
 
-    return img  # Retourner l'image modifiée
+    # Pas besoin de retourner quoi que ce soit car draw modifie directement img_pil
 
 def createVideo():
-    images = ["https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_74047cad-821c-4ae9-853c-6edccc266b6e.jpg/1920x1080.webp", "https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_3ecd735a-b585-4831-894a-22008f19ac93.jpg/1920x1080.webp"]
     sortie = "media/diaporama.avi"
-    fps = 1
+    fps = 30  # Augmenter les FPS pour des transitions plus fluides
     duree_par_image = 3
+    duree_transition = 1  # Durée de la transition en secondes
 
     hauteur, largeur = 1920, 1080
     taille = (largeur, hauteur)
@@ -85,104 +91,199 @@ def createVideo():
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     video = cv2.VideoWriter(sortie, fourcc, fps, taille)
 
-    repetitions = fps * duree_par_image  
-
-    for image in images:
-        img = download_image(image)
-        if img is None:
-            print(f"Impossible de lire {image}, saut de cette image.")
-            continue
-
-        img = cv2.resize(img, taille)
-
-        # Ajouter un rectangle blanc en bas
-        overlay = img.copy()
-        alpha = 1
-
-        rect_top = int(hauteur * 5.5 / 10)
-        rect_bottom = hauteur
-        rect_color = (255, 255, 255)
-
-        cv2.rectangle(overlay, (0, rect_top), (largeur, rect_bottom), rect_color, -1)
-        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
-
-        # Ajouter un rectangle gris en bas
-        overlay = img.copy()
-        alpha = 1
-
-        rect2_top = int(hauteur * 8.5 / 10)
-        rect2_bottom = hauteur - 100
-        rect2_color = (225, 225, 225)
-
-        cv2.rectangle(overlay, (100, rect2_top), (largeur - 100, rect2_bottom), rect2_color, -1)
-        cv2.addWeighted(overlay, alpha, img, 1 - alpha, 0, img)
-
-        # Ajouter le titre
-        texte = "Audi A6"
-        font_path = "arial.ttf"  # Changez ceci si nécessaire
-        try:
-            font = ImageFont.truetype(font_path, 80)
-        except IOError:
-            print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
-            font = ImageFont.load_default()
-
-        img_pil = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
-        draw = ImageDraw.Draw(img_pil)
-
-        text_bbox = draw.textbbox((0, 0), texte, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-        x = 100
-        y = rect_top + text_height + 25
-        draw.text((x, y), texte, fill=(0, 0, 0), font=font)
-
-        # Ajouter description
-        font_path = "arial.ttf"  # Changez ceci si nécessaire
-        try:
-            font = ImageFont.truetype(font_path, 32)
-        except IOError:
-            print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
-            font = ImageFont.load_default()
-
-        texte = "1.5 T5 PHEV RECHARGE PRO MEM. SEAT/PARK ASSIST/CAR"
-        if len(texte) > 45:
-            texte = texte[:45] + "..."
-        text_bbox = draw.textbbox((0, 0), texte, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-        x = 100
-        y = rect_top + text_height + 150
-        draw.text((x, y), texte, fill=(75, 75, 75), font=font)
-
-        # Ajouter le prix
-        font_path = "arial.ttf"  # Changez ceci si nécessaire
-        try:
-            font = ImageFont.truetype(font_path, 80)
-        except IOError:
-            print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
-            font = ImageFont.load_default()
-
-        texte = "14 642 €"
-        text_bbox = draw.textbbox((0, 0), texte, font=font)
-        text_width = text_bbox[2] - text_bbox[0]
-        text_height = text_bbox[3] - text_bbox[1]
-        x = (largeur - text_width) // 2
-        y = rect2_top + (rect2_bottom - rect2_top - text_height) // 2
-        draw.text((x, y), texte, fill=(0, 0, 0), font=font)
-
-        # ajout stats
-        stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
-        img = putStats(img, rect_top, largeur, stats, draw)
-
-        # Convertir l'image PIL en tableau numpy pour OpenCV
-        img = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
-
-        # Ajouter la même image plusieurs fois pour respecter la durée
-        for _ in range(repetitions):
-            video.write(img)
+    images_url = [
+        "https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_74047cad-821c-4ae9-853c-6edccc266b6e.jpg/1920x1080.webp",
+        "https://prod.pictures.autoscout24.net/listing-images/2bbef0ed-5a49-48ed-9b46-9cd0b8cc4cca_3ecd735a-b585-4831-894a-22008f19ac93.jpg/1920x1080.webp"
+    ]
+    
+    # Préparer toutes les images finales en avance
+    final_images = []
+    
+    for image_url in images_url:
+        final_image = create_slide(image_url, hauteur, largeur)
+        final_images.append(final_image)
+    
+    # Ajouter les images à la vidéo avec transitions
+    for i in range(len(final_images)):
+        current_image = final_images[i]
+        
+        # Ajouter l'image actuelle pendant la durée spécifiée (sans transition)
+        frames_to_show = int(fps * (duree_par_image - duree_transition))
+        for _ in range(frames_to_show):
+            video.write(current_image)
+        
+        # Ajouter la transition vers la prochaine image
+        if i < len(final_images) - 1:  # S'il y a une image suivante
+            next_image = final_images[(i + 1)]
+            transition_frames = int(fps * duree_transition)
+            
+            for j in range(transition_frames):
+                # Calculer le facteur de mélange (0.0 à 1.0)
+                alpha = j / transition_frames
+                
+                # Mélanger les deux images
+                blended = cv2.addWeighted(current_image, 1 - alpha, next_image, alpha, 0)
+                video.write(blended)
 
     video.release()
     print(f"Diaporama créé avec succès : {sortie}")
+
+def create_slide(image_url, hauteur, largeur):
+    """Crée une diapositive complète avec l'image et tous les textes"""
+    img = download_image(image_url)
+    
+    # Calculer 45% de la hauteur totale pour l'image
+    img_height = int(hauteur * 0.45)
+    # Garder la largeur complète
+    img_width = largeur
+    
+    # Redimensionner l'image en conservant les proportions
+    img_aspect = img.shape[1] / img.shape[0]
+    
+    # Calculer les dimensions finales de l'image
+    if img_aspect > (img_width / img_height):  # Image plus large que notre ratio
+        new_width = img_width
+        new_height = int(new_width / img_aspect)
+    else:  # Image plus haute que notre ratio
+        new_height = img_height
+        new_width = int(new_height * img_aspect)
+        
+    # Redimensionner l'image
+    img = cv2.resize(img, (new_width, new_height))
+
+    # Créer un fond noir
+    overlay = np.zeros((hauteur, largeur, 3), dtype=np.uint8)
+
+    # Calculer la position pour centrer l'image horizontalement
+    # et la placer en haut
+    x_offset = (largeur - new_width) // 2
+    y_offset = 0
+
+    # Superposer l'image sur le fond noir
+    overlay[y_offset:y_offset + new_height, x_offset:x_offset + new_width] = img
+
+    # Le rectangle blanc commence juste après l'image (à 45% de la hauteur)
+    rect_top = int(hauteur * 0.45)
+    rect_bottom = hauteur
+    rect_color = (255, 255, 255)
+    cv2.rectangle(overlay, (0, rect_top), (largeur, rect_bottom), rect_color, -1)
+
+    # Ajouter un rectangle gris en bas
+    rect2_top = int(hauteur * 7.5 / 10)
+    rect2_bottom = hauteur - 300
+    rect2_color = (225, 225, 225)
+    cv2.rectangle(overlay, (100, rect2_top), (largeur - 100, rect2_bottom), rect2_color, -1)
+
+    # Convertir overlay en format PIL pour dessiner du texte
+    img_pil = Image.fromarray(cv2.cvtColor(overlay, cv2.COLOR_BGR2RGB))
+    draw = ImageDraw.Draw(img_pil)
+
+    # Ajouter le titre
+    texte = "Audi A6"
+    font_path = "arial.ttf"
+    try:
+        font = ImageFont.truetype(font_path, 80)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    text_bbox = draw.textbbox((0, 0), texte, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = 100
+    y = rect_top + text_height + 25
+    draw.text((x, y), texte, fill=(0, 0, 0), font=font)
+
+    # Ajouter le surtitre
+    texte = "- NOUVEL ARRIVAGE -"
+    font_path = "arialbd.ttf"
+    try:
+        font = ImageFont.truetype(font_path, 40)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    text_bbox = draw.textbbox((0, 0), texte, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = (largeur - text_width) // 2
+    y = rect_top + 20
+    draw.text((x, y), texte, fill=(100, 100, 100), font=font)
+
+    # Ajouter description
+    font_path = "arial.ttf"
+    try:
+        font = ImageFont.truetype(font_path, 32)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    description = "1.5 T5 PHEV RECHARGE PRO MEM. SEAT/PARK ASSIST/CAR"
+    if len(description) > 35:
+        description = description[:45] + "..."
+    text_bbox = draw.textbbox((0, 0), description, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = 100
+    y = rect_top + text_height + 150
+    draw.text((x, y), description, fill=(100, 100, 100), font=font)
+
+    # Ajouter le prix
+    font_path = "arialbd.ttf"
+    try:
+        font = ImageFont.truetype(font_path, 80)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    price = "14 642 €"
+    text_bbox = draw.textbbox((0, 0), price, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = (largeur - text_width) // 2
+    y = rect2_top + (rect2_bottom - rect2_top - text_height) // 2 - 10
+    draw.text((x, y), price, fill=(0, 0, 0), font=font)
+
+    # Ajouter contact
+    font_path = "arialbd.ttf"
+    try:
+        font = ImageFont.truetype(font_path, 40)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    contact = "0477 26 19 90 - REMOVED_EMAIL"
+    text_bbox = draw.textbbox((0, 0), contact , font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = (largeur - text_width) // 2
+    y = rect_bottom - text_height - 150
+    draw.text((x, y), contact , fill=(5, 0, 70), font=font)
+
+    # Ajouter nom entreprise
+    font_path = "arialbd.ttf"
+    try:
+        font = ImageFont.truetype(font_path, 40)
+    except IOError:
+        print(f"Impossible d'ouvrir la police '{font_path}'. Utilisation de la police par défaut.")
+        font = ImageFont.load_default()
+
+    company = "- SelectAuto- "
+    text_bbox = draw.textbbox((0, 0), company, font=font)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    x = (largeur - text_width) // 2
+    y = rect_bottom - text_height - 50
+    draw.text((x, y), company, fill=(100, 100, 100), font=font)
+
+    # Ajouter les statistiques
+    stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
+    putStats(rect_top, largeur, stats, draw)
+
+    # Convertir l'image PIL en tableau numpy pour OpenCV
+    final_image = cv2.cvtColor(np.array(img_pil), cv2.COLOR_RGB2BGR)
+    
+    return final_image
 
 def addImageToImage(imagePath, overlayPath, outputPath, position=None):
     # Ouvre les images
