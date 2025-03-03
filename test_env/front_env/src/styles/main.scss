@@ -1,63 +1,47 @@
 @import "common.scss";
 
 .MainPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+
+    background-color: $bgColor;
+    color: white;
+
+
 
     .Content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-
-        margin-top: 3rem;
-
-        h1,
-        h2,
-        h3 {
-            width: 100%;
-        }
-
-        h2{
-            span{
-                background-color: yellow;
-            }
-        }
+        margin-top: 5rem;
 
         .Settings {
-            width: 100%;
+
             form {
                 display: grid;
-                grid-template-columns: 10fr 1fr 1fr;
+                grid-template-columns: 50rem 10rem 10rem;
+                gap: 2rem;
+                column-gap: 10rem;
 
-                gap: 1rem;
+                .Setting {
+                    color: lightgray;
+                    display: flex;
+                    flex-direction: column;
 
-                label {
-
-
-                    color: black;
-
-                    &.Secondary {
-                        color: rgb(4, 1, 179)
-                    }
-
-                    b {
-                        color: rgb(4, 1, 179)
-                    }
+                }
+                Select{
+                    height: 3rem;
+                    border-radius: 0.25rem;
                 }
 
-                input[type="checkbox"] {
-                    height: 1.5rem;
-                }
-                input[type="submit"]{
-                    font-weight: bold;
-                    grid-column: span 3;
+                input[type="Submit"]{
                     font-size: 1.2rem;
-                    cursor: pointer;
-                    
-                }
-                select, option {
-                    color:rgb(4, 1, 179)
                 }
 
+                button{
+                    height: 4rem;
+                }
             }
+
         }
 
     }

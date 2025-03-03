@@ -7,11 +7,11 @@ import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './utils/PrivateRoute';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import ContactPage from './pages/ContactPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TosPage from './pages/TosPage';
 import { ToastContainer } from 'react-toastify';
 import HomePage from './pages/HomePage';
+import ExamplePage from './pages/ExamplePage';
 
 function App() {
   return (
@@ -21,15 +21,15 @@ function App() {
           <AuthProvider>
             <Header/>
             <ToastContainer />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/main" element={<PrivateRoute element={MainPage} />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/contact" element={<ContactPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
-                <Route path="/tos" element={<TosPage />} />
-              </Routes>
-              <Footer/>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/main" element={<PrivateRoute element={MainPage} />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/privacy" element={<PrivacyPage />} />
+              <Route path="/tos" element={<TosPage />} />
+              <Route path="/examples" element={<ExamplePage />}></Route>
+            </Routes>
+            <Footer/>
           </AuthProvider>
         </HelmetProvider>
       </Router>

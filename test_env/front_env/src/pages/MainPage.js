@@ -4,6 +4,7 @@ import FacebookLoginButton from '../components/FacebookLoginButton'
 import * as Api from "../utils/Api.js"
 import { AuthContext } from '../context/AuthContext.js'
 import Alert from '../components/Alert.js'
+import Toggle from '../components/Toggle.js'
 
 function MainPage() {
     const { logoutUser } = useContext(AuthContext)
@@ -29,10 +30,10 @@ function MainPage() {
     async function testingPost(e) {
         e.preventDefault()
         const success = (await Api.fetchPost("/api/testing/", { "scenario": parseInt(e.target.id) })).success
-        if (success){
+        if (success) {
             Alert.success("Le post a bien été créé.")
         }
-        else{
+        else {
             Alert.error("Le post n'a pas pu être créé.")
         }
     }
@@ -89,8 +90,114 @@ function MainPage() {
 
     return (<div className="MainPage">
         {dealerInfos && <div className="Content">
-            <h1>AutoShare</h1>
-            <h2>Synchronisez votre stock <span>Autoscout24</span> avec vos réseaux sociaux, sans rien faire.</h2>
+            <h1>Page de configuration</h1>
+            <div className="Settings">
+                <form>
+                    <h2>Fonctionnalités</h2>
+                    <h2>Activé</h2>
+                    <h2>Test</h2>
+
+                    <div className="Setting">
+                        <b>Activer la gestion de ma page</b>
+                        <span>Si cette option n'est pas activée alors aucun post ne sera publié sur votre page Facebook</span>
+                    </div>
+
+                    <Toggle isActive={enablePageManagemenent} setFct={setEnablePageManagement} />
+                    <span></span>
+                    {enablePageManagemenent && <>
+                        <div className="Setting">
+                            <b>Créer un post quand un véhicule est ajouté à votre catalogue</b>
+                            <span>Quand un véhicule est ajouté à votre catalogue AutoScout, un post sera créé.</span>
+                        </div>
+                        <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
+                        <button id="0" onClick={testingPost}>Tester</button>
+                        <div className="Setting">
+                            <b>Publier également une Story</b>
+                            <span>En plus de créer un post Facebook annonçant le nouvel arrivage, une story sera également publiée.</span>
+                        </div>
+
+                        <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
+                        <button id="6" onClick={testingPost}>Tester</button>
+
+                        <div className="Setting">
+                            <b>Créer un post quand un véhicule a été vendu</b>
+                            <span>Quand un véhicule est retiré de votre catalogue il sera considéré comme vendu. Un post sera créé pour signaler la vente.</span>
+                        </div>
+                        <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
+                        <button id="1" onClick={testingPost}>Tester</button>
+
+
+                        <div className="Setting">
+                            <b>Créer des posts de rappel</b>
+                            <span>Si un véhicule est présent depuis longtemps dans votre catalogue mais n’a toujours pas trouvé preneur, un post sera créé toutes les X semaines afin de remettre l’annonce en avant.</span>
+                        </div>
+
+
+                        <select value={oldCarHz} onChange={(e) => setOldCarHz(e.target.value)}>
+                            <option value="1">1 semaine</option>
+                            <option value="2">2 semaines</option>
+                            <option value="3">3 semaines</option>
+                            <option value="4">4 semaines</option>
+                            <option value="5">5 semaines</option>
+                            <option value="6">6 semaines</option>
+                            <option value="7">7 semaines</option>
+                            <option value="8">8 semaines</option>
+                            <option value="9">9 semaines</option>
+                            <option value="10">10 semaines</option>
+                            <option value="11">11 semaines</option>
+                            <option value="12">12 semaines</option>
+                        </select>
+
+                        <button id="2" onClick={testingPost}>Tester</button>
+
+
+                        <div className="Setting">
+                            <b>Créer un post quand une réduction a lieu sur un véhicule</b>
+                            <span>Lorsque le prix d’un véhicule est diminué, un post est réalisé pour le mettre en avant.</span>
+                        </div>
+                        <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
+                        <button id="3" onClick={testingPost}>Tester</button>
+
+
+                        <div className="Setting">
+                            <b>Créer un post quand une modification d’une annonce a lieu</b>
+                            <span>Si la page AutoScout d’un véhicule est modifiée, un nouveau post sera créé pour signaler que la page a été changée.</span>
+                        </div>
+                        <Toggle isActive={enableModifiedPost} setFct={setEnableModifiedPost} />
+                        <button id="4" onClick={testingPost}>Tester</button>
+
+                        <div className="Setting">
+                            <b>Créer un post récapitulatif du stock</b>
+                            <span>Un post récapitulatif qui reprend l’ensemble de votre stock peut être planifié toutes les X semaines.</span>
+                        </div>
+                        <select value={summaryHz} onChange={(e) => setSummaryHz(e.target.value)}>
+                            <option value="1">1 semaine</option>
+                            <option value="2">2 semaines</option>
+                            <option value="3">3 semaines</option>
+                            <option value="4">4 semaines</option>
+                            <option value="5">5 semaines</option>
+                            <option value="6">6 semaines</option>
+                            <option value="7">7 semaines</option>
+                            <option value="8">8 semaines</option>
+                            <option value="9">9 semaines</option>
+                            <option value="10">10 semaines</option>
+                            <option value="11">11 semaines</option>
+                            <option value="12">12 semaines</option>
+                        </select>
+                            <button id="5" onClick={testingPost}>Tester</button>
+
+                    </>}
+                    <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value="Sauvegarder les changements"></input>
+
+                </form>
+            </div>
+
+        </div>}
+    </div>)
+
+    return (<div className="MainPage">
+        {dealerInfos && <div className="Content">
+            <h1>Page de configuration</h1>
             <div className="Settings">
                 <form>
                     <b>Fonctionnalités</b>
@@ -110,34 +217,34 @@ function MainPage() {
                                 checked={enablePostNewCar}
                                 onChange={() => setEnablePostNewCar(!enablePostNewCar)}
                             />
-                            <button id="0" onClick={testingPost}>Tester</button>
+                            {/* <button id="0" onClick={testingPost}>Tester</button> */}
 
                             {enablePostNewCar && <>
-                            <label className="Secondary">
-                                Publier également en tant que Story
-                            </label>
-                            <input
-                                type="checkbox"
-                                checked={enablePostNewCarStory}
-                                onChange={() => setEnablePostNewCarStory(!enablePostNewCarStory)}
-                            />
-                            <button id="6" onClick={testingPost}>Tester</button>
+                                <label className="Secondary">
+                                    Publier également en tant que Story
+                                </label>
+                                <input
+                                    type="checkbox"
+                                    checked={enablePostNewCarStory}
+                                    onChange={() => setEnablePostNewCarStory(!enablePostNewCarStory)}
+                                />
+                                {/* <button id="6" onClick={testingPost}>Tester</button> */}
 
-                        </>}
+                            </>}
 
                             <label>
                                 Créer un post quand un véhicule a été vendu
 
                             </label>
 
-                       
+
 
                             <input
                                 type="checkbox"
                                 checked={enablePostSoldCar}
                                 onChange={() => setEnablePostSoldCar(!enablePostSoldCar)}
                             />
-                            <button id="1" onClick={testingPost}>Tester</button>
+                            {/* <button id="1" onClick={testingPost}>Tester</button> */}
 
 
                             <label>
@@ -149,7 +256,7 @@ function MainPage() {
                                 checked={enablePostOldCar}
                                 onChange={() => setEnablePostOldCar(!enablePostOldCar)}
                             />
-                            <button id="2" onClick={testingPost}>Tester</button>
+                            {/* <button id="2" onClick={testingPost}>Tester</button> */}
                             {enablePostOldCar ?
                                 <>
                                     <label className="Secondary">
@@ -168,7 +275,7 @@ function MainPage() {
                                         <option value="10">10</option>
                                         <option value="11">11</option>
                                         <option value="12">12</option>
-                                    </select> </>:<><span/><span/></>}
+                                    </select> </> : <><span /><span /></>}
                             <span></span>
 
 
@@ -182,7 +289,7 @@ function MainPage() {
                                 checked={enablePostDiscount}
                                 onChange={() => setEnablePostDiscount(!enablePostDiscount)}
                             />
-                            <button id="3" onClick={testingPost}>Tester</button>
+                            {/* <button id="3" onClick={testingPost}>Tester</button> */}
 
                             <label>
                                 Créer un post quand une modification de la fiche technique d'un véhicule a lieu
@@ -193,7 +300,7 @@ function MainPage() {
                                 checked={enableModifiedPost}
                                 onChange={() => setEnableModifiedPost(!enableModifiedPost)}
                             />
-                            <button id="4" onClick={testingPost}>Tester</button>
+                            {/* <button id="4" onClick={testingPost}>Tester</button> */}
 
                             <label>
                                 Créer un post récapitulatif du stock toutes les <b>{summaryHz}</b> semaines
@@ -204,7 +311,7 @@ function MainPage() {
                                 checked={enablePostStockSummary}
                                 onChange={() => setEnablePostStockSummary(!enablePostStockSummary)}
                             />
-                            <button id="5" onClick={testingPost}>Tester</button>
+                            {/* <button id="5" onClick={testingPost}>Tester</button> */}
 
                             {enablePostStockSummary ? <>
                                 <label className="Secondary">
@@ -223,7 +330,7 @@ function MainPage() {
                                     <option value="10">10</option>
                                     <option value="11">11</option>
                                     <option value="12">12</option>
-                                </select> </>:<><span/><span/></>}
+                                </select> </> : <><span /><span /></>}
 
                         </>
                     }
