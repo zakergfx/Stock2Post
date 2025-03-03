@@ -1,26 +1,46 @@
 @import "common.scss";
 
+
 .Footer {
-
-    margin-top: 30vh;
-    width: 100%;
-    background-color: rgb(233, 233, 233);
-    padding: 1rem;
     display: flex;
-    flex-direction: row;
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
 
-    gap: 5rem;
-
-    .Column{
-        display: flex;
-        flex-direction: column;
-
-
-        a{
-            color: black;
-        }
+    .Blank {
+        height: 10rem;
+        background-color: $bgColor;
+        width: 100%;
 
     }
+
+    .OnlyFooter {
+        width: 100%;
+        background-color: $bgColor2;
+        color: white;
+        padding: 1rem;
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+
+        gap: 5rem;
+
+
+        .Column {
+            display: flex;
+            flex-direction: column;
+
+
+            a {
+                color: white;
+            }
+
+        }
+    }
+
+
+
+
+
+
 
 }

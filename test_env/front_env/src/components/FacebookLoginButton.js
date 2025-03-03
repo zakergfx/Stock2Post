@@ -65,7 +65,7 @@ function FacebookLoginButton() {
 
 
   return (
-    <div>
+    <div className="FbLogin">
       <FacebookLogin
         appId="619463547153543"  // Remplacez par votre App ID Facebook
         autoLoad={false}

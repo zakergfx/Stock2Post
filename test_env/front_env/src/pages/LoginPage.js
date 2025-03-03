@@ -54,23 +54,20 @@ function LoginPage() {
 
     return (<div className="LoginPage">
         <div className="Content">
-            <h1>Connexion</h1>
-            <h2>Etapes</h2>
-            <ul>
-                <li>Connectez-vous avec Facebook</li>
-                <li>Sélectionnez la page que vous souhaitez lier à l'outil</li>
-                <li>Sélectionnez le stock autoscout que vous voulez synchroniser avec votre page</li>
-            </ul>
+            <h1>Page de connexion</h1>
+            <h2>Comment se connecter ?</h2>
+            <span>1. Connectez-vous avec Facebook</span>
+            <span>2. Sélectionnez votre page Facebook</span>
+            <span>3. Si c'est votre <b>première connexion</b>, sélectionnez votre stock AutoScout</span>
             <FacebookLoginButton />
-            <p>Une fois connecté vous serez redirigé vers la page d'administration vous permettant de gérer vos posts Facebook.</p>
             {isRegisterInProgress && dealers ?
                 <div className="RegisterProgress">
-                    Choisissez une page à sync :
+                    <span className="Wide">Choisissez une page à synchroniser</span>
                     <select value={selectedDealer} onChange={(e) => setSelectedDealer(e.target.value)}>
                         <option value="">-- Sélectionnez --</option>
                         {dealers.map((value, index) => <option key={index}>{value.name}</option>)}
                     </select>
-                    <button onClick={handleSyncButtonClick}>Confirmer</button>
+                    <button className="Primary" onClick={handleSyncButtonClick}>Confirmer</button>
                 </div>
                 : null
             }

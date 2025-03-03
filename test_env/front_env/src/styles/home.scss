@@ -6,56 +6,251 @@
     align-items: center;
     width: 100%;
 
+    background-color: $bgColor;
+
     .Content {
 
-        margin-top: 3rem;
+        margin-top: 5rem;
 
-        color: $secondColor;
+        color: white;
 
-        .Title {
+        .AS {
+            color: $firstColor;
+        }
+
+        .IG {
+            color: $igColor;
+        }
+
+        .FB {
+            color: $fbColor;
+        }
+
+        h1{
+            font-size: 3rem;
+
+            text-align: center;
+        }
+
+        .Subtitle{
+            text-align: center;
+        }
+
+
+        .Visuals {
             display: flex;
             flex-direction: row;
-            align-items: center;
-            gap: 3rem;
+            align-items: flex-start;
+            justify-content: center;
+            height: 40rem;
 
-            max-width: 90rem;
-
-            img {
-                max-width: 30%;
+            #iphone {
+                height: 100%;
             }
-        }
 
-        .Examples {
-
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-
-
-
-            .Example {
+            .MacAndCta {
                 display: flex;
                 flex-direction: column;
-                align-items: center;
+                justify-content: space-between;
+                height: 90%;
 
-                margin-bottom: 3rem;
-
-                h3 {
+                #mac {
+                    width: 45rem;
                 }
 
-                img {
-                    border-radius: 0.5rem;
-                    box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.3);
+                .TextAndCta {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    justify-content: space-evenly;
 
-                    width: 80%
+                    font-size: 1.2rem;
                 }
-
             }
-
 
 
         }
 
+        .Features {
+            display: flex;
+            flex-direction: column;
+
+            .Cards {
+                display: flex;
+                flex-direction: row;
+
+                gap: 1rem;
+
+                .Card {
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: flex-start;
+
+                    h3 {
+                        color: black;
+                        background-color: #DEDEDE;
+                        padding-left: 2rem;
+                        ;
+                        padding-right: 2rem;
+                        padding-top: 1rem;
+                        padding-bottom: 1rem;
+                        margin: 0;
+
+                        border-radius: 0.25rem 0.25rem 0 0;
+
+                    }
+
+                    .CardContent {
+                        display: flex;
+                        flex-direction: column;
+                        background-color: white;
+                        color: black;
+                        border-radius: 0 0 0.25rem 0.25rem;
+
+                        padding-left: 2rem;
+                        padding-right: 2rem;
 
 
+                        width: 25rem;
+                        height: 38rem;
+
+                        // margin: 0;
+
+                        h4 {
+                            font-size: 1.2rem;
+                        }
+
+                        &#card1 {
+                            h4 {
+                                .Red {
+                                    color: red;
+                                }
+                            }
+
+                            .ImgContainer {
+                                display: flex;
+                                flex-direction: row;
+                                justify-content: center;
+
+                                img {
+
+                                    width: 10rem;
+                                }
+                            }
+                        }
+
+                        &#card2 {
+                            align-items: center;
+                            gap: 1rem;
+
+                            h4 {
+                                .Red {
+                                    color: red;
+                                }
+                            }
+
+                            img {
+                                margin-top: 2rem;
+                                width: 15rem;
+                            }
+
+                            .ModelAndDesc {
+                                display: flex;
+                                flex-direction: column;
+                                width: 100%;
+
+                                .Description {
+                                    color: gray;
+                                }
+
+                            }
+
+
+                            .Table {
+                                display: grid;
+                                grid-template-columns: 1fr 1fr;
+                                row-gap: 1rem;
+                                width: 100%;
+
+                                .Right {
+                                    text-align: right;
+                                }
+
+                                #price {
+                                    grid-column: span 2;
+                                    text-align: center;
+                                    background-color: #DEDEDE;
+                                    padding: 1rem;
+                                }
+                            }
+
+                            .Contact {
+                                color: $darkBlue;
+                            }
+
+                        }
+
+                        &#card3 {
+                            justify-content: space-between;
+                            padding-top: 1rem;
+                            padding-bottom: 1rem;
+                            padding: 0;
+                            background-color: transparent;
+
+                            .SubCard {
+                                padding: 2rem;
+                                width: 100%;
+                                background-color: white;
+
+                                li {
+                                    line-height: 2;
+                                }
+                            }
+
+                            a {
+                                font-size: 1.2rem;
+                            }
+
+
+                        }
+                    }
+                }
+            }
+        }
+
+        .Contact {
+            display: flex;
+            flex-direction: column;
+            max-width: 50rem;
+
+            form {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+
+                gap: 1rem;
+
+                .Wide {
+                    grid-column: span 2;
+                }
+
+                input {
+                    margin-bottom: 1rem;
+                }
+            }
+        }
+
+        .NextFeatures {
+            display: flex;
+            flex-direction: column;
+
+            .FeatureCards {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+
+                width: 77rem;
+            }
+
+        }
     }
 }

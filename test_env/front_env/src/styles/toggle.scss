@@ -1,0 +1,46 @@
+@import "common.scss";
+
+.Toggle {
+
+    .Container {
+    cursor: pointer;
+
+        border-radius: 360rem;
+        width: 5rem;
+        height: 2rem;
+
+        transition: background-color 0.25s ease;
+
+
+        &.Active {
+            background-color: $firstColor;
+
+        }
+
+        &.Inactive {
+            background-color: lightgray;
+        }
+
+        .Button {
+
+
+            position: relative;
+            border-radius: 360rem;
+            height: 1.5rem;
+            width: 1.5rem;
+            top: 0.25rem;
+            background-color: $bgColor;
+
+            transition: left 0.25s ease;
+
+            &.Active {
+                left: 3rem;
+            }
+
+            &.Inactive {
+                left: 0.5rem;
+            }
+        }
+    }
+
+}

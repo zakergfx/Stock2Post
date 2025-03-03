@@ -1,12 +1,29 @@
 @import "common.scss";
 
 .TosPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    
+    width: 100%;
+    background-color: $bgColor;
+    color: white;
 
     .Content{
         display: flex;
         flex-direction: column;
+        justify-content: center;
 
-        margin-top: 3rem;
+        margin-top: 5rem;
+
+
+        p{
+            max-width: 50rem;
+        }
+
+        a{
+            color: lightblue;
+        }
 
     }
 }

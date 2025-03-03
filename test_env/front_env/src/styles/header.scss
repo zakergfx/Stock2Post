@@ -1,24 +1,37 @@
 @import "common.scss";
 
+
 .Header {
 
     position: fixed;
     height: 3rem;
+
+    margin-top: 1rem;
 
 
     display: flex;
     flex-direction: row;
     align-items: center;
 
-    background-color: rgb(233, 233, 233);
+    background-color: $headerColor;
 
+    border-radius: 0.25rem;
 
     gap: 5rem;
 
     padding: 1rem;
 
-    a{
-        color: black;
+    a {
+        color: white;
         text-decoration: none;
+
+        &.Log {
+            color: black;
+            background-color: $firstColor;
+            padding: 0.25rem 2rem;
+
+            border-radius: 0.25rem;
+
+        }
     }
 }

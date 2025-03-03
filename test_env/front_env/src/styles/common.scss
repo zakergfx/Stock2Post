@@ -1,24 +1,59 @@
 $fontFamily: "Poppins";
 
-$firstColor: #AF3535;
+$firstColor: #FFC300;
+$fbColor: #479DFF;
+$igColor: #FF8F40;
+$darkBlue: #05008E;
 $secondColor: #404040;
 $thirdColor: #e9e9e9;
-$bgColor: #181818;
+$bgColor: #151515;
+$headerColor: #555555;
 $bgColor2: #262626;
 
-h1{
+h1 {
     font-size: 2.5rem;
 }
 
+button, input[type="Submit"] {
+    cursor: pointer;
+    padding-right: 2rem;
+    padding-left: 2rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 
+
+    border-radius: 0.25rem;
+
+    color: black;
+    font-weight: bold;
+    text-align: center;
+
+
+    &.Primary {
+        background-color: $firstColor;
+    }
+
+    &.Secondary {
+        background-color: white;
+    }
+}
 
 a {
+    color: $darkBlue;
+    cursor: pointer;
+    text-decoration: none;
+
     &.Button {
 
-        padding: 1rem;
-        border-radius: 0.5rem;
+        padding-right: 2rem;
+        padding-left: 2rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
 
-        color: white;
+
+        border-radius: 0.25rem;
+
+        color: black;
         font-weight: bold;
         text-align: center;
 
@@ -28,25 +63,25 @@ a {
         }
 
         &.Secondary {
-            background-color: $secondColor;
+            background-color: white;
         }
     }
 }
 
-input{
-    border-radius: 0.5rem;
+input {
+    border-radius: 0.25rem;
     padding: 1rem;
 
-    background-color: $thirdColor;
+    background-color: white;
 
 }
 
-textarea{
-    border-radius: 0.5rem;
+textarea {
+    border-radius: 0.25rem;
     padding: 1rem;
 
     resize: none;
 
-    background-color: $thirdColor;
+    background-color: white;
 
 }

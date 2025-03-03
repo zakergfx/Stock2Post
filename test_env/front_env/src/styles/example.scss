@@ -1,6 +1,6 @@
 @import "common.scss";
 
-.LoginPage {
+.ExamplePage {
     background-color: $bgColor;
     color: white;
 
@@ -13,30 +13,31 @@
     .Content {
         margin-top: 5rem;
 
-
         display: flex;
         flex-direction: column;
+        align-items: center;
 
-        span {
 
-            line-height: 3;
+        .Title {
+            width: 100%;
         }
 
-
-        .FbLogin{
-            margin-top: 3rem;
-        }
-        .RegisterProgress {
-            margin-top: 3rem;
-
+        .Examples {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 0.5fr 0.5fr;
+
+
+            align-items: center;
 
             column-gap: 3rem;
+            row-gap: 5rem;
 
-            .Wide {
-                grid-column: span 2;
+            img {
+                width: 100%;
+
+                border-radius: 0.25rem;
             }
+
         }
     }
 }
