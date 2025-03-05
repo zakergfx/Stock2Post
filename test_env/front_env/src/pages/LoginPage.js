@@ -28,8 +28,6 @@ function LoginPage() {
             else {
                 Alert.error("Erreur lors de la connexion")
             }
-            navigate("/main")
-
 
         }
         else {

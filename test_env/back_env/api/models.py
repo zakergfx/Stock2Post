@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import time
 
 class Settings(models.Model):
     pageIsManaged = models.BooleanField(default=False)
@@ -14,7 +15,7 @@ class Settings(models.Model):
     oldCarPostDelay = models.PositiveIntegerField(default=4)
     summaryPostDelay = models.PositiveIntegerField(default=4)
 
-    lastSummary = models.PositiveIntegerField(default=1739524883)
+    lastSummary = models.PositiveIntegerField(default=int(time.time()))
 
 class Dealer(models.Model):
     name = models.CharField(max_length=500)

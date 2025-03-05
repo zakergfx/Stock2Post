@@ -19,6 +19,7 @@
             form {
                 display: grid;
                 grid-template-columns: 50rem 10rem 10rem;
+                // grid-template-columns: 50rem 10rem;
                 gap: 2rem;
                 column-gap: 10rem;
 
@@ -28,21 +29,38 @@
                     flex-direction: column;
 
                 }
-                Select{
+
+                Select {
                     height: 3rem;
                     border-radius: 0.25rem;
                 }
 
-                input[type="Submit"]{
+                input[type="Submit"] {
                     font-size: 1.2rem;
                 }
 
-                button{
+                button {
                     height: 4rem;
                 }
             }
 
         }
 
+    }
+}
+
+@media (max-width: 1280px) {
+    .MainPage {
+        .Content {
+            margin: 0 1rem;
+            .Settings {
+                form {
+                    gap: 1rem;
+                    grid-template-columns: 70% 25%;
+                }
+            }
+
+
+        }
     }
 }
