@@ -3,14 +3,17 @@ import "../styles/home.scss"
 import * as Api from "../utils/Api.js"
 import * as Var from "../utils/Var.js"
 import FeatureCard from '../components/FeatureCard.js'
+import { MainContext } from '../context/MainContext.js'
 
 function HomePage() {
+
+    const {isMobile} = useContext(MainContext)
 
     return (<div className="HomePage" id="home">
         <div className="Content">
             <h1>Gagnez en visibilité sur les réseaux sociaux sans effort</h1>
             <p className="Subtitle">Synchronisez automatiquement votre stock <span className="AS">AutoScout24</span> avec votre page <span className="FB">Facebook</span> et <span className="IG">Instagram (bientôt disponible)</span></p>
-            <div className="Visuals">
+            {!isMobile ? <div className="Visuals">
                 <img id="iphone" src={Var.backendUrl + "/api/media/iphone.png"} />
                 <div className="MacAndCta">
                     <img id="mac" src={Var.backendUrl + "/api/media/mac.png"} />
@@ -19,10 +22,22 @@ function HomePage() {
                         <a href="/#contact" className="Button Primary">Je demande une démo !</a>
                     </div>
                 </div>
-            </div>
+            </div> :
+                <div className="Visuals">
+                    <div className="MacAndCta">
+                        <div className="Img"><img id="iphone" src={Var.backendUrl + "/api/media/iphone.png"} /></div>
+                        <div className="TextAndCta">
+                            <span>Intéressé par ce service ?</span>
+                            <a href="/#contact" className="Button Primary">Je demande une démo !</a>
+                        </div>
+                    </div>
+                </div>}
+
             <div className="Features" id="features">
-                <h2>Fonctionnalités</h2>
-                <p>Les fonctionnalités suivantes sont déjà disponible et vous permettent de gérer <b>automatiquement</b> vos réseaux</p>
+                <div className="Titles">
+                    <h2>Fonctionnalités</h2>
+                    <p>Les fonctionnalités suivantes sont déjà disponible et vous permettent de gérer <b>automatiquement</b> vos réseaux</p>
+                </div>
                 <div className="Cards">
                     <div className="Card">
                         <h3>Création de post</h3>
@@ -63,7 +78,7 @@ function HomePage() {
                                 <span className="Right">Garantie 12 mois</span>
                                 <b id="price">9800 €</b>
                             </div>
-                            <b className="Contact">0477 26 19 90 - abc@example.com</b>
+                            <b className="Contacts">0477 26 19 90 - abc@example.com</b>
                         </div>
                     </div>
                     <div className="Card">
@@ -121,15 +136,15 @@ function HomePage() {
                             L’objectif est que vous puissiez facilement vous rendre compte si oui ou non l’application vous fait gagner en temps et visibilité.</p>
                     </FeatureCard>
                     <FeatureCard title="Intégration d’Instagram">
-                        <p>L’outil sera capable de publier des posts et Story (Reels) sur instagram. Pour ce faire il vous suffira de lier votre compte Instagram via l’onglet de Connexion.</p>                    
-                        </FeatureCard>
+                        <p>L’outil sera capable de publier des posts et Story (Reels) sur instagram. Pour ce faire il vous suffira de lier votre compte Instagram via l’onglet de Connexion.</p>
+                    </FeatureCard>
                     <FeatureCard title="Mise en avant des avis">
                         <p>Les avis positifs des utilisateurs laissés sur AutoScout pourront être automatiquement publiés sur votre page Facebook.</p>
                     </FeatureCard>
                 </div>
             </div>
         </div>
-    </div>)
+    </div >)
 
 }
 

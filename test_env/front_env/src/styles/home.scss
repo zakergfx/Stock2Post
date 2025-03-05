@@ -10,6 +10,11 @@
 
     .Content {
 
+        margin: 0 1rem;
+
+
+        gap: 3rem;
+
         margin-top: 5rem;
 
         color: white;
@@ -26,13 +31,13 @@
             color: $fbColor;
         }
 
-        h1{
+        h1 {
             font-size: 3rem;
 
             text-align: center;
         }
 
-        .Subtitle{
+        .Subtitle {
             text-align: center;
         }
 
@@ -74,12 +79,18 @@
         .Features {
             display: flex;
             flex-direction: column;
+            align-items: center;
+
+            .Titles {
+                width: 100%;
+            }
 
             .Cards {
                 display: flex;
                 flex-direction: row;
+                justify-content: space-between;
+                width: 100%;
 
-                gap: 1rem;
 
                 .Card {
                     display: flex;
@@ -90,7 +101,6 @@
                         color: black;
                         background-color: #DEDEDE;
                         padding-left: 2rem;
-                        ;
                         padding-right: 2rem;
                         padding-top: 1rem;
                         padding-bottom: 1rem;
@@ -114,7 +124,6 @@
                         width: 25rem;
                         height: 38rem;
 
-                        // margin: 0;
 
                         h4 {
                             font-size: 1.2rem;
@@ -184,7 +193,7 @@
                                 }
                             }
 
-                            .Contact {
+                            .Contacts {
                                 color: $darkBlue;
                             }
 
@@ -236,6 +245,10 @@
                 input {
                     margin-bottom: 1rem;
                 }
+
+                a{
+                    font-size: 1.2rem;
+                }
             }
         }
 
@@ -253,4 +266,90 @@
 
         }
     }
+}
+
+@media (max-width: 1280px) {
+    .HomePage {
+        .Content {
+            
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            h1 {
+                font-size: 2.5rem;
+                margin-bottom: 0;
+            }
+
+            p{
+                font-size: 1.2rem;
+                margin-top: 0;
+            }
+
+            .Visuals{
+                height: auto;
+                .MacAndCta{
+                    height: auto;
+                    align-items: center;
+                    .Img{
+                        height: 35rem;
+                    }
+                    .TextAndCta{
+                        margin-top: 2rem;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 1rem;
+                    }
+                }
+            }
+
+            .Contact{
+                max-width: 90%;
+
+                form{
+                    input{
+                        width: 100%;
+                    }
+
+                    
+                }
+            }
+
+            .Features {
+                width: 80%;
+
+                .Cards {
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+
+                    gap: 3rem;
+
+                    .Card {
+                        width: 100%;
+                        .CardContent {
+                            width: 100%;
+                        }
+                    }
+
+
+                }
+            }
+
+            .NextFeatures {
+
+                max-width: 90%;
+
+                .FeatureCards {
+                    display: flex;
+                    flex-direction: column;
+
+                    width: 100%;
+
+                }
+
+            }
+        }
+    }
+
 }

@@ -88,6 +88,28 @@ function MainPage() {
 
     }
 
+    function handleOldCarHz(e) {
+        const hz = e.target.value
+        setOldCarHz(hz)
+        if (hz === 0){
+            setEnablePostOldCar(false)
+        }
+        else{
+            setEnablePostOldCar(true)
+        }
+    }
+
+    function handleSummaryHz(e) {
+        const hz = e.target.value
+        setSummaryHz(hz)
+        if (hz === 0){
+            setEnablePostStockSummary(false)
+        }
+        else{
+            setEnablePostStockSummary(true)
+        }
+    }
+
     return (<div className="MainPage">
         {dealerInfos && <div className="Content">
             <h1>Page de configuration</h1>
@@ -133,7 +155,8 @@ function MainPage() {
                         </div>
 
 
-                        <select value={oldCarHz} onChange={(e) => setOldCarHz(e.target.value)}>
+                        <select value={oldCarHz} onChange={handleOldCarHz}>
+                            <option value="0">Jamais</option>
                             <option value="1">1 semaine</option>
                             <option value="2">2 semaines</option>
                             <option value="3">3 semaines</option>
@@ -170,7 +193,8 @@ function MainPage() {
                             <b>Créer un post récapitulatif du stock</b>
                             <span>Un post récapitulatif qui reprend l’ensemble de votre stock peut être planifié toutes les X semaines.</span>
                         </div>
-                        <select value={summaryHz} onChange={(e) => setSummaryHz(e.target.value)}>
+                        <select value={summaryHz} onChange={handleSummaryHz}>
+                            <option value="0">Jamais</option>
                             <option value="1">1 semaine</option>
                             <option value="2">2 semaines</option>
                             <option value="3">3 semaines</option>
@@ -184,7 +208,7 @@ function MainPage() {
                             <option value="11">11 semaines</option>
                             <option value="12">12 semaines</option>
                         </select>
-                            <button id="5" onClick={testingPost}>Tester</button>
+                        <button id="5" onClick={testingPost}>Tester</button>
 
                     </>}
                     <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value="Sauvegarder les changements"></input>
@@ -194,154 +218,6 @@ function MainPage() {
 
         </div>}
     </div>)
-
-    return (<div className="MainPage">
-        {dealerInfos && <div className="Content">
-            <h1>Page de configuration</h1>
-            <div className="Settings">
-                <form>
-                    <b>Fonctionnalités</b>
-                    <b>Activé</b>
-                    <b>Test</b>
-
-                    <label>Activer la gestion de ma page</label>
-                    <input checked={enablePageManagemenent} onChange={() => setEnablePageManagement(!enablePageManagemenent)} type="checkbox"></input>
-                    <span></span>
-                    {enablePageManagemenent &&
-                        <>
-                            <label>
-                                Créer un post quand un véhicule est ajouté à votre catalogue
-                            </label>
-                            <input
-                                type="checkbox"
-                                checked={enablePostNewCar}
-                                onChange={() => setEnablePostNewCar(!enablePostNewCar)}
-                            />
-                            {/* <button id="0" onClick={testingPost}>Tester</button> */}
-
-                            {enablePostNewCar && <>
-                                <label className="Secondary">
-                                    Publier également en tant que Story
-                                </label>
-                                <input
-                                    type="checkbox"
-                                    checked={enablePostNewCarStory}
-                                    onChange={() => setEnablePostNewCarStory(!enablePostNewCarStory)}
-                                />
-                                {/* <button id="6" onClick={testingPost}>Tester</button> */}
-
-                            </>}
-
-                            <label>
-                                Créer un post quand un véhicule a été vendu
-
-                            </label>
-
-
-
-                            <input
-                                type="checkbox"
-                                checked={enablePostSoldCar}
-                                onChange={() => setEnablePostSoldCar(!enablePostSoldCar)}
-                            />
-                            {/* <button id="1" onClick={testingPost}>Tester</button> */}
-
-
-                            <label>
-                                Créer un post quand un véhicule présent dans le catalogue depuis <b>{oldCarHz}</b> semaines n'a pas encore été vendu
-
-                            </label>
-                            <input
-                                type="checkbox"
-                                checked={enablePostOldCar}
-                                onChange={() => setEnablePostOldCar(!enablePostOldCar)}
-                            />
-                            {/* <button id="2" onClick={testingPost}>Tester</button> */}
-                            {enablePostOldCar ?
-                                <>
-                                    <label className="Secondary">
-                                        Nombre de semaines
-                                    </label>
-                                    <select value={oldCarHz} onChange={(e) => setOldCarHz(e.target.value)}>
-                                        <option value="1">1</option>
-                                        <option value="2">2</option>
-                                        <option value="3">3</option>
-                                        <option value="4">4</option>
-                                        <option value="5">5</option>
-                                        <option value="6">6</option>
-                                        <option value="7">7</option>
-                                        <option value="8">8</option>
-                                        <option value="9">9</option>
-                                        <option value="10">10</option>
-                                        <option value="11">11</option>
-                                        <option value="12">12</option>
-                                    </select> </> : <><span /><span /></>}
-                            <span></span>
-
-
-
-                            <label>
-                                Créer un post quand une réduction a lieu sur un véhicule
-
-                            </label>
-                            <input
-                                type="checkbox"
-                                checked={enablePostDiscount}
-                                onChange={() => setEnablePostDiscount(!enablePostDiscount)}
-                            />
-                            {/* <button id="3" onClick={testingPost}>Tester</button> */}
-
-                            <label>
-                                Créer un post quand une modification de la fiche technique d'un véhicule a lieu
-
-                            </label>
-                            <input
-                                type="checkbox"
-                                checked={enableModifiedPost}
-                                onChange={() => setEnableModifiedPost(!enableModifiedPost)}
-                            />
-                            {/* <button id="4" onClick={testingPost}>Tester</button> */}
-
-                            <label>
-                                Créer un post récapitulatif du stock toutes les <b>{summaryHz}</b> semaines
-
-                            </label>
-                            <input
-                                type="checkbox"
-                                checked={enablePostStockSummary}
-                                onChange={() => setEnablePostStockSummary(!enablePostStockSummary)}
-                            />
-                            {/* <button id="5" onClick={testingPost}>Tester</button> */}
-
-                            {enablePostStockSummary ? <>
-                                <label className="Secondary">
-                                    Nombre de semaines
-                                </label>
-                                <select value={summaryHz} onChange={(e) => setSummaryHz(e.target.value)}>
-                                    <option value="1">1</option>
-                                    <option value="2">2</option>
-                                    <option value="3">3</option>
-                                    <option value="4">4</option>
-                                    <option value="5">5</option>
-                                    <option value="6">6</option>
-                                    <option value="7">7</option>
-                                    <option value="8">8</option>
-                                    <option value="9">9</option>
-                                    <option value="10">10</option>
-                                    <option value="11">11</option>
-                                    <option value="12">12</option>
-                                </select> </> : <><span /><span /></>}
-
-                        </>
-                    }
-                    <input onClick={handleButtonClick} type="Submit" value="Sauvegarder les changements"></input>
-                </form>
-            </div>
-
-        </div>}
-    </div>)
-
-
 }
 
 export default MainPage

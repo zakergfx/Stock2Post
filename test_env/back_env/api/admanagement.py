@@ -15,10 +15,15 @@ import numpy as np
 BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    # scheduledTask()
-    dealer = models.Dealer.objects.first()
-    publishVideo(dealer)
+    #scheduledTask()
+    init()
 
+def init():
+    dealer = models.Dealer.objects.first()
+    adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name)
+    for ad in adsToAdd:
+        createAd(ad)
+  
 def cleanFbPage():
     dealers = models.Dealer.objects.all()
     for dealer in dealers:
@@ -751,22 +756,19 @@ def scheduledTask():
             ad.save()
             models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
 
-        if dealer.fk_settings.createDiscountCarPost:
-            postDiscountAds(dealer)
-        if dealer.fk_settings.createModifiedPost:
-            postEditedAds(dealer)
-
-
-        if dealer.fk_settings.createNewCarStory:
-            postNewAdsStory(dealer)
-        if dealer.fk_settings.createNewCarPost:
-            postNewAds(dealer)
-
-
-        if dealer.fk_settings.createSoldCarPost:
-            postSoldAds(dealer)
-        if dealer.fk_settings.createOldCarPost:
-            reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
-        if dealer.fk_settings.createSummaryPost:
-            postAdsRecap(dealer.fk_settings.summaryPostDelay, dealer) 
+        if dealer.fk_settings.pageIsManaged:
+            if dealer.fk_settings.createDiscountCarPost:
+                postDiscountAds(dealer)
+            if dealer.fk_settings.createModifiedPost:
+                postEditedAds(dealer)
+            if dealer.fk_settings.createNewCarStory:
+                postNewAdsStory(dealer)
+            if dealer.fk_settings.createNewCarPost:
+                postNewAds(dealer)
+            if dealer.fk_settings.createSoldCarPost:
+                postSoldAds(dealer)
+            if dealer.fk_settings.createOldCarPost:
+                reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
+            if dealer.fk_settings.createSummaryPost:
+                postAdsRecap(dealer.fk_settings.summaryPostDelay, dealer) 
 
