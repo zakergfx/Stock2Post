@@ -1,6 +1,6 @@
 import * as Var from "./Var.js"
 
-export async function fetchGet(page, auth=true) {
+export async function fetchGet(page, auth = true) {
 
     let headers = {}
 
@@ -20,13 +20,25 @@ export async function fetchGet(page, auth=true) {
         method: "GET",
         headers: headers
     })
-    const data = await response.json()
 
-    if (data.detail) {
-        data = data.detail
+    try {
+        const data = await response.json()
+
+        if (data.detail) {
+            data = data.detail
+        }
+        const msg = { "success": response.ok, "detail": data }
+        return msg
+
     }
-    const msg = { "success": response.ok, "detail": data }
-    return msg
+
+    catch {
+        const msg = { "success": false, "detail": "error" }
+        return msg
+
+
+    }
+
 }
 
 export async function fetchPost(page, data, auth = true) {
@@ -47,19 +59,28 @@ export async function fetchPost(page, data, auth = true) {
 
     data = JSON.stringify(data)
 
-    const response = await fetch(Var.backendUrl + page, {
-        method: "POST",
-        headers: headers,
-        body: data
-    })
-
-    data = await response.json()
-    if (data.detail) {
-        data = data.detail
+    try{
+        const response = await fetch(Var.backendUrl + page, {
+            method: "POST",
+            headers: headers,
+            body: data
+        })
+    
+        data = await response.json()
+        if (data.detail) {
+            data = data.detail
+        }
+        const msg = { "success": response.ok, "detail": data }
+    
+        return msg
     }
-    const msg = { "success": response.ok, "detail": data }
 
-    return msg
+    catch {
+        const msg = { "success": false, "detail": "error" }
+        return msg
+    }
+
+   
 }
 
 export async function fetchPatch(page, data) {
@@ -75,7 +96,7 @@ export async function fetchPatch(page, data) {
         headers: headers,
         body: data
     })
-
+    
     data = await response.json()
     if (data.detail) {
         data = data.detail

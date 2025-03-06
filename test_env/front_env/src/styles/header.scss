@@ -21,6 +21,10 @@
 
     padding: 1rem;
 
+    .Colored{
+        color: $firstColor;
+    }
+
     a {
         color: white;
         text-decoration: none;

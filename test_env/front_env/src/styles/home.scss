@@ -246,8 +246,14 @@
                     margin-bottom: 1rem;
                 }
 
-                a{
+                button{
                     font-size: 1.2rem;
+                }
+
+                label{
+                    .Mandatory{
+                        color: red;
+                    }
                 }
             }
         }

@@ -15,7 +15,7 @@ function ExamplePage() {
             <div className="Content">
                 <div className="Title">
                     <h1>Exemples pour chacun des posts</h1>
-                    <p>Cette section montre un post example pour chacune des fonctionnalité de l’application.</p>
+                    <p>Cette section montre un post example pour chacune des fonctionnalités de l’application.</p>
                 </div>
                 <div className="Examples">
                     <img src={Var.backendUrl + "/api/media/newcar.png"}></img>

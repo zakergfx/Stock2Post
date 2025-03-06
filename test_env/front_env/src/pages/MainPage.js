@@ -3,11 +3,13 @@ import "../styles/main.scss"
 import FacebookLoginButton from '../components/FacebookLoginButton'
 import * as Api from "../utils/Api.js"
 import { AuthContext } from '../context/AuthContext.js'
+import { MainContext } from '../context/MainContext.js'
+
 import Alert from '../components/Alert.js'
 import Toggle from '../components/Toggle.js'
 
 function MainPage() {
-    const { logoutUser } = useContext(AuthContext)
+    const { isMobile } = useContext(MainContext)
 
     const [enablePageManagemenent, setEnablePageManagement] = useState()
 
@@ -27,9 +29,16 @@ function MainPage() {
 
     const [dealerInfos, setDealerInfos] = useState()
 
+    const [testMode, setTestMode] = useState(false)
+
+
+
     async function testingPost(e) {
         e.preventDefault()
+        console.log("Envoi de la demande de création du post")
+        Alert.info("Test en cours. Celà peut prendre jusqu'à 1 minute.")
         const success = (await Api.fetchPost("/api/testing/", { "scenario": parseInt(e.target.id) })).success
+        console.log(success)
         if (success) {
             Alert.success("Le post a bien été créé.")
         }
@@ -91,10 +100,10 @@ function MainPage() {
     function handleOldCarHz(e) {
         const hz = e.target.value
         setOldCarHz(hz)
-        if (hz === 0){
+        if (hz === 0) {
             setEnablePostOldCar(false)
         }
-        else{
+        else {
             setEnablePostOldCar(true)
         }
     }
@@ -102,22 +111,29 @@ function MainPage() {
     function handleSummaryHz(e) {
         const hz = e.target.value
         setSummaryHz(hz)
-        if (hz === 0){
+        if (hz === 0) {
             setEnablePostStockSummary(false)
         }
-        else{
+        else {
             setEnablePostStockSummary(true)
         }
     }
 
     return (<div className="MainPage">
         {dealerInfos && <div className="Content">
-            <h1>Page de configuration</h1>
+
+            <div className="Title">
+                <h1>Page de configuration </h1>
+                <div className="Testmode">
+                    <span>Activer le mode Test</span>
+                    <Toggle isActive={testMode} setFct={setTestMode} />
+                </div>
+            </div>
             <div className="Settings">
-                <form>
+                <form className={testMode ? "Test" : "Prod"}>
                     <h2>Fonctionnalités</h2>
                     <h2>Activé</h2>
-                    <h2>Test</h2>
+                    {testMode && !isMobile && <h2>Test</h2>}
 
                     <div className="Setting">
                         <b>Activer la gestion de ma page</b>
@@ -125,35 +141,36 @@ function MainPage() {
                     </div>
 
                     <Toggle isActive={enablePageManagemenent} setFct={setEnablePageManagement} />
-                    <span></span>
+                    {!isMobile && testMode && <span></span>}
                     {enablePageManagemenent && <>
                         <div className="Setting">
                             <b>Créer un post quand un véhicule est ajouté à votre catalogue</b>
                             <span>Quand un véhicule est ajouté à votre catalogue AutoScout, un post sera créé.</span>
                         </div>
                         <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
-                        <button id="0" onClick={testingPost}>Tester</button>
+                        {testMode && <button id="0" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
                         <div className="Setting">
                             <b>Publier également une Story</b>
                             <span>En plus de créer un post Facebook annonçant le nouvel arrivage, une story sera également publiée.</span>
                         </div>
 
                         <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
-                        <button id="6" onClick={testingPost}>Tester</button>
+                        {testMode && <button id="6" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
 
                         <div className="Setting">
                             <b>Créer un post quand un véhicule a été vendu</b>
                             <span>Quand un véhicule est retiré de votre catalogue il sera considéré comme vendu. Un post sera créé pour signaler la vente.</span>
                         </div>
                         <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
-                        <button id="1" onClick={testingPost}>Tester</button>
-
+                        {testMode && <button id="1" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
 
                         <div className="Setting">
                             <b>Créer des posts de rappel</b>
                             <span>Si un véhicule est présent depuis longtemps dans votre catalogue mais n’a toujours pas trouvé preneur, un post sera créé toutes les X semaines afin de remettre l’annonce en avant.</span>
                         </div>
-
 
                         <select value={oldCarHz} onChange={handleOldCarHz}>
                             <option value="0">Jamais</option>
@@ -171,15 +188,16 @@ function MainPage() {
                             <option value="12">12 semaines</option>
                         </select>
 
-                        <button id="2" onClick={testingPost}>Tester</button>
-
+                        {testMode && <button id="2" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
 
                         <div className="Setting">
                             <b>Créer un post quand une réduction a lieu sur un véhicule</b>
                             <span>Lorsque le prix d’un véhicule est diminué, un post est réalisé pour le mettre en avant.</span>
                         </div>
                         <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
-                        <button id="3" onClick={testingPost}>Tester</button>
+                        {testMode && <button id="3" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
 
 
                         <div className="Setting">
@@ -187,7 +205,8 @@ function MainPage() {
                             <span>Si la page AutoScout d’un véhicule est modifiée, un nouveau post sera créé pour signaler que la page a été changée.</span>
                         </div>
                         <Toggle isActive={enableModifiedPost} setFct={setEnableModifiedPost} />
-                        <button id="4" onClick={testingPost}>Tester</button>
+                        {testMode && <button id="4" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
 
                         <div className="Setting">
                             <b>Créer un post récapitulatif du stock</b>
@@ -208,10 +227,11 @@ function MainPage() {
                             <option value="11">11 semaines</option>
                             <option value="12">12 semaines</option>
                         </select>
-                        <button id="5" onClick={testingPost}>Tester</button>
+                        {testMode && <button id="5" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
 
                     </>}
-                    <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value="Sauvegarder les changements"></input>
+                    <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value={!isMobile ? "Sauvegarder les changements" : "Sauvegarder"}></input>
 
                 </form>
             </div>

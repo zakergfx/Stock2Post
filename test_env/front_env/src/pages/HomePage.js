@@ -2,12 +2,40 @@ import { useContext, useEffect, useState } from 'react'
 import "../styles/home.scss"
 import * as Api from "../utils/Api.js"
 import * as Var from "../utils/Var.js"
+import Alert from '../components/Alert.js'
+
 import FeatureCard from '../components/FeatureCard.js'
 import { MainContext } from '../context/MainContext.js'
 
 function HomePage() {
 
-    const {isMobile} = useContext(MainContext)
+    const { isMobile } = useContext(MainContext)
+
+    const [formData, setFormData] = useState({
+        name: '',
+        surname: '',
+        phone: '',
+        mail: '',
+        company: '',
+        message: ''
+    });
+
+    function handleChange(e) {
+        const { id, value } = e.target;
+        setFormData({
+            ...formData,
+            [id]: value
+        });
+    };
+
+    async function handleSubmit(e) {
+        e.preventDefault()
+        const response = await Api.fetchPost("/api/sendmail/", formData, false)
+        if (response.success)
+            Alert.success("Mail envoyé !")
+        else
+            Alert.error("Echec de l'envoi du mail.")
+    }
 
     return (<div className="HomePage" id="home">
         <div className="Content">
@@ -106,20 +134,20 @@ function HomePage() {
                 <span><b>Téléphone : </b>0477 26 19 90</span>
                 <span><b>Mail : </b>REMOVED_EMAIL</span>
                 <br /><span>Ou bien via ce formulaire</span><br />
-                <form>
-                    <label for="name">Nom</label>
-                    <label for="surname">Prénom</label>
-                    <input type="text" id="name"></input>
-                    <input type="text" id="surname"></input>
-                    <label for="phone">N° de téléphone</label>
-                    <label for="mail">Adresse mail</label>
-                    <input type="number" id="phone"></input>
-                    <input type="text" id="mail"></input>
-                    <label className="Wide" for="company">Nom de votre entreprise</label>
-                    <input className="Wide" type="text" id="company"></input>
-                    <label className="Wide" for="message">Message</label>
-                    <textarea rows="10" className="Wide" id="message"></textarea>
-                    <a className="Button Primary">Envoyer</a>
+                <form onSubmit={handleSubmit}>
+                    <label required for="name">Nom <span className="Mandatory">*</span></label>
+                    <label required for="surname">Prénom <span className="Mandatory">*</span></label>
+                    <input required onChange={handleChange} value={formData.name} type="text" id="name"></input>
+                    <input required onChange={handleChange} value={formData.surname} type="text" id="surname"></input>
+                    <label required for="phone">N° de téléphone <span className="Mandatory">*</span></label>
+                    <label required for="mail">Adresse mail <span className="Mandatory">*</span></label>
+                    <input required onChange={handleChange} value={formData.phone} type="number" id="phone"></input>
+                    <input required onChange={handleChange} value={formData.mail} type="text" id="mail"></input>
+                    <label required className="Wide" for="company">Nom de votre entreprise <span className="Mandatory">*</span></label>
+                    <input required onChange={handleChange} value={formData.company} className="Wide" type="text" id="company"></input>
+                    <label required className="Wide" for="message">Message <span className="Mandatory">*</span></label>
+                    <textarea rows="10" onChange={handleChange} value={formData.message} className="Wide" id="message"></textarea>
+                    <button type="submit" className="Primary">Envoyer</button>
                 </form>
             </div>
             <div className="NextFeatures" id="nextfeatures">

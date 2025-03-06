@@ -9,19 +9,39 @@
     background-color: $bgColor;
     color: white;
 
-
-
     .Content {
         margin-top: 5rem;
+
+
+        .Title{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+
+            .Testmode{
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+                margin-right: 1rem;
+            }
+        }
 
         .Settings {
 
             form {
                 display: grid;
-                grid-template-columns: 50rem 10rem 10rem;
-                // grid-template-columns: 50rem 10rem;
                 gap: 2rem;
-                column-gap: 10rem;
+                column-gap: 5rem;
+
+                &.Prod {
+                    grid-template-columns: 50rem 10rem
+                }
+
+                &.Test {
+                    grid-template-columns: 50rem 10rem 10rem;
+
+                }
 
                 .Setting {
                     color: lightgray;
@@ -52,15 +72,21 @@
 @media (max-width: 1280px) {
     .MainPage {
         .Content {
-            margin: 0 1rem;
+            margin: 5rem 1rem 0 1rem;
+
             .Settings {
                 form {
                     gap: 1rem;
-                    grid-template-columns: 70% 25%;
+
+
+                    &.Test, &.Prod {
+                        grid-template-columns: 70% 25%;
+
+                    }
                 }
+
+
             }
-
-
         }
     }
 }

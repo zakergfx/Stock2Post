@@ -22,7 +22,11 @@ function FacebookLoginButton() {
   async function login(userToken) {
     // récupération user id
     let response = await fetch(`https://graph.facebook.com/v22.0/me?access_token=${userToken}&fields=id,name`)
+    
+    console.log(userToken)
+    
     const userId = (await response.json()).id
+
 
     // récupération long user token
     response = await fetch(`https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=REMOVED_FACEBOOK_APP_ID&client_secret=cf4ad9d1e6a0f5b315bbd17d7e407e00&fb_exchange_token=${userToken}`)
