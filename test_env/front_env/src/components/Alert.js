@@ -3,10 +3,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const style = {
     position: "bottom-right",
-    autoClose: 3000,
+    autoClose: 6000,
     hideProgressBar: false,
     closeOnClick: true,
-    pauseOnHover: true,
+    pauseOnHover: false,
     draggable: true,
     progress: undefined,
     theme: "dark",
@@ -20,6 +20,11 @@ const Alert = {
     },
     success(msg) {
         toast.success(msg, {
+            ...style
+        });
+    },
+    info(msg) {
+        toast.info(msg, {
             ...style
         });
     }

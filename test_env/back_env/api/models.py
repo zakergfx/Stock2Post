@@ -2,6 +2,10 @@ from django.db import models
 from django.conf import settings
 import time
 
+
+def get_current_timestamp():
+    return int(time.time())
+
 class Settings(models.Model):
     pageIsManaged = models.BooleanField(default=False)
     createNewCarPost = models.BooleanField(default=False)
@@ -15,7 +19,7 @@ class Settings(models.Model):
     oldCarPostDelay = models.PositiveIntegerField(default=4)
     summaryPostDelay = models.PositiveIntegerField(default=4)
 
-    lastSummary = models.PositiveIntegerField(default=int(time.time()))
+    lastSummary = models.PositiveIntegerField(default=get_current_timestamp)
 
 class Dealer(models.Model):
     name = models.CharField(max_length=500)

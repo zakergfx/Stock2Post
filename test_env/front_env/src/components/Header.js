@@ -25,7 +25,7 @@ function Header() {
   if (!isMobile)
     return (
       <div className="Header">
-        <a href="/#home">Accueil</a>
+        <a href="/#home"><b>Stock<span className="Colored">2Post</span></b></a>
         <a href="/#features">Fonctionnalités</a>
         <a href="/main">Administration</a>
         <a href="/#contact">Contact</a>
@@ -38,7 +38,7 @@ function Header() {
         <img src={Var.backendUrl+"/api/media/hamburger.png"} onClick={() => setIsHeaderDisplayed(!isHeaderDisplayed)}></img>
       </div>
       <div className={"Content " + (isHeaderDisplayed ? "Shown" : "Hidden")}>
-        <a href="/#home" onClick={() => setIsHeaderDisplayed(false)}>Accueil</a>
+        <a href="/#home" onClick={() => setIsHeaderDisplayed(false)}><b>Stock<span className="Colored">2Post</span></b></a>
         <a href="/#features" onClick={() => setIsHeaderDisplayed(false)}>Fonctionnalités</a>
         <a href="/main" onClick={() => setIsHeaderDisplayed(false)}>Administration</a>
         <a href="/#contact" onClick={() => setIsHeaderDisplayed(false)}>Contact</a>

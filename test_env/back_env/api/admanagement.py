@@ -15,14 +15,16 @@ import numpy as np
 BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    #scheduledTask()
-    init()
+    nbBayern = models.Ad.objects.filter(fk_dealer__name="bayern")
+    print(len(nbBayern))
 
-def init():
-    dealer = models.Dealer.objects.first()
+def init(dealerName):
+    dealer = models.Dealer.objects.get(name=dealerName)
     adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name)
     for ad in adsToAdd:
-        createAd(ad)
+        adDict = createAdDict(ad)
+        adDict["isPublished"] = True
+        models.Ad.objects.create(**adDict)
   
 def cleanFbPage():
     dealers = models.Dealer.objects.all()
@@ -283,7 +285,6 @@ def create_slide(ad, image_url, hauteur, largeur):
     # Ajouter les statistiques
     # stats = ["Essence", "09/2020", "116 cv", "Boite automatique", "45 000 km", "Garantie 12 mois"]
     stats = [ad.fuel, ad.release, f'{ad.kw} kw ({ad.ch} ch)', "Automatique" if ad.isAutomatic else "Manuel" , f"{formatNumber(ad.km)} km", "Garantie 12 mois"]
-    print(stats)
     putStats(rect_top, largeur, stats, draw)
 
     # Convertir l'image PIL en tableau numpy pour OpenCV
@@ -412,7 +413,7 @@ def setEquipment(soup, sep="\n"):
 def createAdDict(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
-    ad = {"date": int(time.time()), "isPublished": False, "isSold": False}
+    ad = {"date": int(time.time())+7200, "isPublished": False, "isSold": False}
 
     ad["model"] = soup.find(class_="StageTitle_makeModelContainer__RyjBP").get_text()
     ad["description"] = soup.find(class_="StageTitle_modelVersion__Yof2Z").get_text()
@@ -479,7 +480,8 @@ def getDealerRemoteAdsUrls(dealer):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    nbPages = len(soup.find_all(class_="pagination-item"))
+    nbPages = len(soup.find_all(attrs={"data-testid": "pagination-button"}))
+
     ads = soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
 
     if nbPages > 1:
@@ -489,6 +491,7 @@ def getDealerRemoteAdsUrls(dealer):
             response = requests.get(url)
             soup = BeautifulSoup(response.text, "html.parser")
             ads += soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
+
 
     adsUrls = []
     for ad in ads:
@@ -500,12 +503,14 @@ def getAdsChanges(dealer):
     localAds = getDealerLocalAds(dealer)
     remoteAdsUrls = getDealerRemoteAdsUrls(dealer)
 
+
     # RENVOIT DES VOITURES EN DB LOCAL VENDUES
     adsSold = []
     for localAd in localAds:
         if localAd.url not in remoteAdsUrls:
             adsSold.append(localAd)
             localAds.delete()
+
 
     # AJOUT DES VOITURES EN DB LOCAL
     adsToAdd = []
@@ -516,12 +521,15 @@ def getAdsChanges(dealer):
 
     # MODIFICATION DES VOITURES EXISTANTES
     adsToEdit = []
+    cpt = 0
     for localAd in localAds:
         oldAdDict = objToDict(localAd)
         newAdDict = createAdDict(localAd.url)
 
 
         keys = ["url", "price", "model", "basicData", "history", "technicalSpecs", "consumption", "appearance", "equipment", "summary", "description", "km", "fuel", "isAutomatic", "release", "kw", "ch", "mainPicture", "carPassUrl"]
+        print(cpt)
+        cpt+=1
 
         oldAdHash = dictToHash(oldAdDict, keys)
         newAdHash = dictToHash(newAdDict, keys)
@@ -749,6 +757,7 @@ def scheduledTask():
             ad.save()
         for ad in adsToAdd:
             createAd(ad)
+
         for ads in adsToEdit:
             ads["newAd"]["isModified"] = True
             ad = models.Ad.objects.get(id=ads["oldAd"].id)
@@ -756,18 +765,19 @@ def scheduledTask():
             ad.save()
             models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
 
+
         if dealer.fk_settings.pageIsManaged:
             if dealer.fk_settings.createDiscountCarPost:
                 postDiscountAds(dealer)
             if dealer.fk_settings.createModifiedPost:
                 postEditedAds(dealer)
-            if dealer.fk_settings.createNewCarStory:
+            if dealer.fk_settings.createNewCarStory: # avant post normal car ca met isPublished = True
                 postNewAdsStory(dealer)
             if dealer.fk_settings.createNewCarPost:
                 postNewAds(dealer)
             if dealer.fk_settings.createSoldCarPost:
                 postSoldAds(dealer)
-            if dealer.fk_settings.createOldCarPost:
+            if dealer.fk_settings.createOldCarPost: # + 2h chaque fois pour eviter le spam
                 reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
             if dealer.fk_settings.createSummaryPost:
                 postAdsRecap(dealer.fk_settings.summaryPostDelay, dealer) 

@@ -6,6 +6,22 @@ from rest_framework.permissions import AllowAny
 import requests
 from django.contrib.auth.models import User
 from . import admanagement
+from . import tools
+
+class SendMailView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+
+        print(request.data)
+        subject = "Prise de contact pour AutoShare"
+        body = f'Nom: {request.data["surname"]} {request.data["name"]}\nEntreprise: {request.data["company"]}\
+        \nContact: {request.data["phone"]} {request.data["mail"]}\n\nMessage: {request.data["message"]}'
+
+        success = tools.sendMail("zakergfx@gmail.com", subject, body)
+        
+        return Response({"success": success}, status=200)
 
 class DealersView(APIView):
     authentication_classes = []

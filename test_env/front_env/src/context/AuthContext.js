@@ -19,7 +19,6 @@ export function AuthProvider({ children }) {
     const [fbId, setFbId] = useState()
 
 
-
     async function loginUser(token) {
         let response = await fetch(Var.backendUrl + "/api/login/", {
             method: "POST",
@@ -34,8 +33,10 @@ export function AuthProvider({ children }) {
             setAccess(data.access)
             setRefresh(data.refresh)
             setUser(jwtDecode(data.access))
+
             localStorage.setItem("access", data.access)
             localStorage.setItem("refresh", data.refresh)
+
             return ({ "success": response.ok, "detail": "Connexion réussie" })
 
         }
