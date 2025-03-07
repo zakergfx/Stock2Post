@@ -29,7 +29,10 @@ class Dealer(models.Model):
     phone = models.CharField(max_length=500)
 
     fbId = models.PositiveIntegerField(default=None, blank=True, null=True)
-    token = models.CharField(max_length=500, null=True, blank=True)
+    fbToken = models.CharField(max_length=500, null=True, blank=True)
+
+    igId = models.PositiveIntegerField(default=None, blank=True, null=True)
+    igToken = models.CharField(max_length=500, null=True, blank=True)
 
     isInit = models.BooleanField(default=False)
 

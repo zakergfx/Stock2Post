@@ -58,7 +58,7 @@ CSRF_TRUSTED_ORIGINS = [
     'https://stock2post.be'
 ]
 
-if ENV == "PROD":
+if False and ENV == "PROD":
     LOGGING = {
         'version': 1,
         'disable_existing_loggers': False,

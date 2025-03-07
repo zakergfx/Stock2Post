@@ -68,19 +68,26 @@ export function AuthProvider({ children }) {
                 },
                 body: JSON.stringify({ 'refresh': refresh })
             })
-            let data = await response.json()
 
 
-            if (response.status === 200) {
-                setAccess(data.access)
+            try{
+                let data = await response.json()
 
-                setUser(jwtDecode(data.access))
-                localStorage.setItem("access", data.access)
+                if (response.status === 200) {
+                    setAccess(data.access)
+    
+                    setUser(jwtDecode(data.access))
+                    localStorage.setItem("access", data.access)
+                }
+                else {
+    
+                    logoutUser()
+                }
             }
-            else {
-
+            catch{
                 logoutUser()
             }
+           
         }
 
 
