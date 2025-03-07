@@ -98,25 +98,15 @@ function MainPage() {
     }
 
     function handleOldCarHz(e) {
-        const hz = e.target.value
+        const hz = parseInt(e.target.value)
         setOldCarHz(hz)
-        if (hz === 0) {
-            setEnablePostOldCar(false)
-        }
-        else {
-            setEnablePostOldCar(true)
-        }
+        setEnablePostOldCar(hz!==0)
     }
 
     function handleSummaryHz(e) {
-        const hz = e.target.value
+        const hz = parseInt(e.target.value)
         setSummaryHz(hz)
-        if (hz === 0) {
-            setEnablePostStockSummary(false)
-        }
-        else {
-            setEnablePostStockSummary(true)
-        }
+        setEnablePostStockSummary(hz!==0)
     }
 
     return (<div className="MainPage">

@@ -15,11 +15,9 @@ import numpy as np
 BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    nbBayern = models.Ad.objects.filter(fk_dealer__name="bayern")
-    print(len(nbBayern))
+    pass
 
-def init(dealerName):
-    dealer = models.Dealer.objects.get(name=dealerName)
+def init(dealer):
     adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name)
     for ad in adsToAdd:
         adDict = createAdDict(ad)
@@ -499,10 +497,11 @@ def getDealerRemoteAdsUrls(dealer):
     
     return adsUrls
 
-def getAdsChanges(dealer):
+def getAdsChanges(dealer, editedAds):
     localAds = getDealerLocalAds(dealer)
     remoteAdsUrls = getDealerRemoteAdsUrls(dealer)
 
+    urlsToFetch = 0
 
     # RENVOIT DES VOITURES EN DB LOCAL VENDUES
     adsSold = []
@@ -518,24 +517,25 @@ def getAdsChanges(dealer):
     for remoteAdUrl in remoteAdsUrls:
         if remoteAdUrl not in localAdsUrls:
             adsToAdd.append(remoteAdUrl)
-
-    # MODIFICATION DES VOITURES EXISTANTES
+            urlsToFetch+=1
+    
     adsToEdit = []
-    cpt = 0
-    for localAd in localAds:
-        oldAdDict = objToDict(localAd)
-        newAdDict = createAdDict(localAd.url)
+    if editedAds:
+        # MODIFICATION DES VOITURES EXISTANTES
+        for localAd in localAds:
+            oldAdDict = objToDict(localAd)
+            newAdDict = createAdDict(localAd.url)
+            urlsToFetch+=1
 
+            keys = ["url", "price", "model", "basicData", "history", "technicalSpecs", "consumption", "appearance", "equipment", "summary", "description", "km", "fuel", "isAutomatic", "release", "kw", "ch", "mainPicture", "carPassUrl"]
 
-        keys = ["url", "price", "model", "basicData", "history", "technicalSpecs", "consumption", "appearance", "equipment", "summary", "description", "km", "fuel", "isAutomatic", "release", "kw", "ch", "mainPicture", "carPassUrl"]
-        print(cpt)
-        cpt+=1
+            oldAdHash = dictToHash(oldAdDict, keys)
+            newAdHash = dictToHash(newAdDict, keys)
 
-        oldAdHash = dictToHash(oldAdDict, keys)
-        newAdHash = dictToHash(newAdDict, keys)
+            if oldAdHash != newAdHash:  
+                adsToEdit.append({"oldAd": localAd, "newAd": newAdDict})
 
-        if oldAdHash != newAdHash:  
-            adsToEdit.append({"oldAd": localAd, "newAd": newAdDict})
+    print("url to fetch:", urlsToFetch)
 
     return adsSold, adsToAdd, adsToEdit
             
@@ -584,6 +584,7 @@ def uploadPictures(ad, dealer):
     return picturesIds
 
 def createPost(ad, msg, dealer):
+    print("Creating new car post")
     url = f"{BASEURL}/{dealer.fbId}/feed"
     body = {"message": msg, "access_token": dealer.token, "attached_media": []}
 
@@ -609,14 +610,16 @@ def createRecap(msg, dealer):
 def postNewAds(dealer):
     ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
     for ad in ads:
-        msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-        createPost(ad, msg, dealer)
+        if ad.date > dealer.fk_settings.lastNewCarPostEnabled:
+            msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+            createPost(ad, msg, dealer)
+        if dealer.fk_settings.createNewCarStory:
+            postNewAdStory(dealer, ad)
 
-def postNewAdsStory(dealer):
-    ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
-    for ad in ads:
-        createVideo(ad)
-        publishVideo(dealer)
+def postNewAdStory(dealer, ad):
+    print("Creating new car story")
+    createVideo(ad)
+    publishVideo(dealer)
 
 
 def publishVideo(dealer):
@@ -751,34 +754,39 @@ def createTestPost(dealer, scenario):
 def scheduledTask():
     dealers = models.Dealer.objects.all()
     for dealer in dealers:
-        adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name)
-        for ad in adsSold:
-            ad.isSold = True
-            ad.save()
-        for ad in adsToAdd:
-            createAd(ad)
+        if dealer.isInit:
+            print("normal sched task "+dealer.name)
+            adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name, editedAds=dealer.fk_settings.createDiscountCarPost or dealer.fk_settings.createModifiedPost)
+            for ad in adsSold:
+                ad.isSold = True
+                ad.save()
+            for ad in adsToAdd:
+                createAd(ad)
 
-        for ads in adsToEdit:
-            ads["newAd"]["isModified"] = True
-            ad = models.Ad.objects.get(id=ads["oldAd"].id)
-            ad.lastPrice = ad.price
-            ad.save()
-            models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
+            for ads in adsToEdit:
+                ads["newAd"]["isModified"] = True
+                ad = models.Ad.objects.get(id=ads["oldAd"].id)
+                ad.lastPrice = ad.price
+                ad.save()
+                models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
 
 
-        if dealer.fk_settings.pageIsManaged:
-            if dealer.fk_settings.createDiscountCarPost:
-                postDiscountAds(dealer)
-            if dealer.fk_settings.createModifiedPost:
-                postEditedAds(dealer)
-            if dealer.fk_settings.createNewCarStory: # avant post normal car ca met isPublished = True
-                postNewAdsStory(dealer)
-            if dealer.fk_settings.createNewCarPost:
-                postNewAds(dealer)
-            if dealer.fk_settings.createSoldCarPost:
-                postSoldAds(dealer)
-            if dealer.fk_settings.createOldCarPost: # + 2h chaque fois pour eviter le spam
-                reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
-            if dealer.fk_settings.createSummaryPost:
-                postAdsRecap(dealer.fk_settings.summaryPostDelay, dealer) 
+            if dealer.fk_settings.pageIsManaged:
+                if dealer.fk_settings.createDiscountCarPost:
+                    postDiscountAds(dealer)
+                if dealer.fk_settings.createModifiedPost: # discount avant edited comme ca pas de doublon
+                    postEditedAds(dealer)
+                if dealer.fk_settings.createNewCarPost:
+                    postNewAds(dealer)
+                if dealer.fk_settings.createSoldCarPost:
+                    postSoldAds(dealer)
+                if dealer.fk_settings.createOldCarPost: # + 2h chaque fois pour eviter le spam
+                    reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
+                if dealer.fk_settings.createSummaryPost:
+                    postAdsRecap(dealer.fk_settings.summaryPostDelay, dealer) 
+        else:
+            print("init "+dealer.name)
+            init(dealer)
+            dealer.isInit = True
+            dealer.save()
 

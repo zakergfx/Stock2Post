@@ -20,6 +20,7 @@ class Settings(models.Model):
     summaryPostDelay = models.PositiveIntegerField(default=4)
 
     lastSummary = models.PositiveIntegerField(default=get_current_timestamp)
+    lastNewCarPostEnabled = models.PositiveIntegerField(default=get_current_timestamp)
 
 class Dealer(models.Model):
     name = models.CharField(max_length=500)
@@ -29,6 +30,8 @@ class Dealer(models.Model):
 
     fbId = models.PositiveIntegerField(default=None, blank=True, null=True)
     token = models.CharField(max_length=500, null=True, blank=True)
+
+    isInit = models.BooleanField(default=False)
 
     fk_settings = models.OneToOneField(Settings, on_delete=models.CASCADE)
     fk_user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
