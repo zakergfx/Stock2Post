@@ -6,7 +6,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-from . import models, tools
+from . import models, tools, ig
 from difflib import SequenceMatcher
 import hashlib
 import cv2
@@ -15,10 +15,16 @@ import numpy as np
 BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    pass
+    dealer = models.Dealer.objects.first()
+    imageUrl = "https://stock2post.be/api/media/redcar.png"
+    imageUrls = ["https://stock2post.be/api/media/redcar.png", "https://stock2post.be/api/media/hamburger.png"]
+    message = "post via script python"
+    
+    mediaId = ig.IGcreateCarouselContainer(dealer, imageUrls, message)
+    ig.IGPublishMedia(dealer, mediaId)
 
 def init(dealer):
-    adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name)
+    adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name, editedAds=False)
     for ad in adsToAdd:
         adDict = createAdDict(ad)
         adDict["isPublished"] = True
@@ -28,7 +34,7 @@ def cleanFbPage():
     dealers = models.Dealer.objects.all()
     for dealer in dealers:
         url = f"{BASEURL}/{dealer.fbId}/feed"
-        headers = {"Authorization": f"OAuth {dealer.token}"}
+        headers = {"Authorization": f"OAuth {dealer.fbToken}"}
         response = requests.get(url, headers=headers).json()
 
         for line in response:
@@ -85,7 +91,7 @@ def putStats(rect_top, largeur, textes, draw):
     # Pas besoin de retourner quoi que ce soit car draw modifie directement img_pil
 
 def createVideo(ad):
-    sortie = "media/diaporama.avi"
+    sortie = "media/diaporama.mov"
     fps = 30  # Augmenter les FPS pour des transitions plus fluides
     duree_par_image = 3
     duree_transition = 1  # Durée de la transition en secondes
@@ -478,23 +484,26 @@ def getDealerRemoteAdsUrls(dealer):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    nbPages = len(soup.find_all(attrs={"data-testid": "pagination-button"}))
+    ads = []
+    pagesRemaining = True
 
-    ads = soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
-
-    if nbPages > 1:
-
-        for index in range(1, nbPages):
-            url = baseUrl + "?page={}".format(index+1)
-            response = requests.get(url)
-            soup = BeautifulSoup(response.text, "html.parser")
-            ads += soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
-
+    index = 1
+    while pagesRemaining:
+        url = baseUrl + "?page={}".format(index)
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
+        pageAds = soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
+        index+=1
+        if len(pageAds) > 0:
+            ads += pageAds
+        else:
+            pagesRemaining= False
 
     adsUrls = []
     for ad in ads:
         adsUrls.append("https://autoscout24.be"+ad.get("href"))
     
+    print("urls remote : "+str(len(adsUrls)))
     return adsUrls
 
 def getAdsChanges(dealer, editedAds):
@@ -552,16 +561,17 @@ def removeFormatOfSummary(summarySoup):
 
 def uploadPicture(pictureUrl, dealer):
     url = f"{BASEURL}/{dealer.fbId}/photos"
-    body = {"access_token": dealer.token, "published": False, "url": pictureUrl}
+    body = {"access_token": dealer.fbToken, "published": False, "url": pictureUrl}
 
     response = requests.post(url, json=body)
 
+    print("picture", response.json())
     pictureId = response.json()["id"]
     return pictureId
 
 def uploadPictureFromLocal(path, msg, dealer):
     url = f"{BASEURL}/{dealer.fbId}/photos"
-    body = {"access_token": dealer.token, "message": msg}
+    body = {"access_token": dealer.fbToken, "message": msg}
 
     with open(path, "rb") as f:
         files = {"file": f}
@@ -569,6 +579,7 @@ def uploadPictureFromLocal(path, msg, dealer):
         response = requests.post(url, data=body, files=files)
 
 
+    print("avant pictureId", response.json())
     pictureId = response.json()["id"]
     return pictureId
 
@@ -586,7 +597,7 @@ def uploadPictures(ad, dealer):
 def createPost(ad, msg, dealer):
     print("Creating new car post")
     url = f"{BASEURL}/{dealer.fbId}/feed"
-    body = {"message": msg, "access_token": dealer.token, "attached_media": []}
+    body = {"message": msg, "access_token": dealer.fbToken, "attached_media": []}
 
     picturesIds = uploadPictures(ad, dealer)
 
@@ -602,7 +613,7 @@ def createPost(ad, msg, dealer):
 
 def createRecap(msg, dealer):
     url = f"{BASEURL}/{dealer.fbId}/feed"
-    body = {"message": msg, "access_token": dealer.token}
+    body = {"message": msg, "access_token": dealer.fbToken}
 
     response = requests.post(url, json=body)
 
@@ -610,11 +621,12 @@ def createRecap(msg, dealer):
 def postNewAds(dealer):
     ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
     for ad in ads:
-        if ad.date > dealer.fk_settings.lastNewCarPostEnabled:
-            msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-            createPost(ad, msg, dealer)
-        if dealer.fk_settings.createNewCarStory:
-            postNewAdStory(dealer, ad)
+        if (dealer.fbToken): # si lié à FB
+            if ad.date > dealer.fk_settings.lastNewCarPostEnabled:
+                msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+                createPost(ad, msg, dealer)
+            if dealer.fk_settings.createNewCarStory:
+                postNewAdStory(dealer, ad)
 
 def postNewAdStory(dealer, ad):
     print("Creating new car story")
@@ -625,7 +637,7 @@ def postNewAdStory(dealer, ad):
 def publishVideo(dealer):
     # start upload session
     url = f"https://graph.facebook.com/v22.0/{dealer.fbId}/video_stories"
-    headers = {"Authorization": f"OAuth {dealer.token}"}
+    headers = {"Authorization": f"OAuth {dealer.fbToken}"}
     body = {"upload_phase": "start"}
 
     response = requests.post(url=url, json=body, headers=headers)
@@ -633,16 +645,16 @@ def publishVideo(dealer):
 
     # upload the video
     url = f"https://rupload.facebook.com/video-upload/v22.0/{videoId}"
-    videoPath = "media/diaporama.avi"
-    headers = {"Authorization": f"OAuth {dealer.token}", "offset": "0", "file_size": str(os.path.getsize(videoPath)), "Content-Type": "video/mp4"}
+    videoPath = "media/diaporama.mov"
+    headers = {"Authorization": f"OAuth {dealer.fbToken}", "offset": "0", "file_size": str(os.path.getsize(videoPath)), "Content-Type": "video/quicktime"}
 
     with open(videoPath, "rb") as f:
         response = requests.post(url=url, json=body, headers=headers, data=f)
         response = response.json()
 
-    # publish as story
+    # publish as storyq
     url = f"https://graph.facebook.com/v22.0/{dealer.fbId}/video_stories"
-    headers = {"Authorization": f"OAuth {dealer.token}"}
+    headers = {"Authorization": f"OAuth {dealer.fbToken}"}
     body = {"video_id": videoId, "upload_phase": "finish"}
 
     response = requests.post(url=url, json=body, headers=headers)

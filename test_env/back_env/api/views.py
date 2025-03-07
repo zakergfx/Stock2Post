@@ -93,7 +93,7 @@ class RegisterView(APIView):
 
         dealer = models.Dealer.objects.get(name=request.data["dealer"])
         dealer.fk_user = user
-        dealer.token = request.data["pageToken"]
+        dealer.fbToken = request.data["pageToken"]
         dealer.fbId = request.data["fbId"]
         dealer.save()
 
