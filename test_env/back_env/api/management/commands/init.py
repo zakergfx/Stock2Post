@@ -4,4 +4,4 @@ from ... import admanagement
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-        admanagement.init("Selectauto")
+        admanagement.init("SelectAuto")
