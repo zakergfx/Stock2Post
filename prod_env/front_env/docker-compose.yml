@@ -1,0 +1,14 @@
+version: '3.0'
+
+services:
+  front:
+    container_name: as_front
+    hostname: as_front
+    image: as_front
+    restart: unless-stopped
+    networks:
+      - lan
+
+networks:
+  lan:
+    external: true
