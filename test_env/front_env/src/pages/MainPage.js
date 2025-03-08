@@ -199,7 +199,7 @@ function MainPage() {
                         {testMode && isMobile && <span />}
 
                         <div className="Setting">
-                            <b>Créer un post récapitulatif du stock</b>
+                            <b>Créer un post récapitulatif du stock (Facebook uniquement)</b>
                             <span>Un post récapitulatif qui reprend l’ensemble de votre stock peut être planifié toutes les X semaines.</span>
                         </div>
                         <select value={summaryHz} onChange={handleSummaryHz}>
