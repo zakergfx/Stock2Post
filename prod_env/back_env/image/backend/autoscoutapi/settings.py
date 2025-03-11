@@ -38,8 +38,21 @@ SECRET_KEY = os.getenv("SECRET")
 DEBUG = True
 
 # Configuration pour ajuster la durée de validité du token
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Par exemple, 1 heure pour l'access token
+if ENV == "PROD":
+    SIMPLE_JWT = {
+        'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),  # Par exemple, 1 heure pour l'access token
+        'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Par exemple, 7 jours pour le refresh token
+        'ROTATE_REFRESH_TOKENS': False,                   # Si tu ne veux pas faire tourner les tokens de rafraîchissement
+        'BLACKLIST_AFTER_ROTATION': False,                # Si tu veux blacklister les tokens après rotation
+        'ALGORITHM': 'HS256',                             # Algorithme de signature (par défaut, HS256)
+        'SIGNING_KEY': 'your-secret-key',                 # Ta clé secrète
+        'VERIFYING_KEY': None,
+        'AUDIENCE': None,
+        'ISSUER': None,
+    }
+else:
+    SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),  # Par exemple, 1 heure pour l'access token
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Par exemple, 7 jours pour le refresh token
     'ROTATE_REFRESH_TOKENS': False,                   # Si tu ne veux pas faire tourner les tokens de rafraîchissement
     'BLACKLIST_AFTER_ROTATION': False,                # Si tu veux blacklister les tokens après rotation
@@ -190,7 +203,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Paris'
 
 USE_I18N = True
 

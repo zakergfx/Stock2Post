@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from . import models, serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import AllowAny
-import requests
+import requests, random, os, threading
 from django.contrib.auth.models import User
 from . import admanagement
 from . import tools
+from django.contrib.auth import authenticate
 
 class SendMailView(APIView):
     authentication_classes = []
@@ -41,7 +42,11 @@ class DealerSpecificView(APIView):
     
 class MeView(APIView):
     def get(self, request):
-        return Response({"user": request.user.username}, status=200)
+
+        dealer = models.Dealer.objects.get(fk_user=request.user)
+        data = {"fbPageName": dealer.fbPageName, "igPageName": dealer.igPageName, "user": dealer.name}
+        return Response(data, status=200)
+
     
 class SettingsSpecificView(APIView):
     def patch(self, request, dealer):
@@ -56,71 +61,136 @@ class SettingsSpecificView(APIView):
 
         return Response(newSettings, status=200)
 
-class IsRegisteredView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        # récupérer token de fb et faire le lien
-        token = request.data["token"]
-
-        url = "https://graph.facebook.com/v22.0/me"
-        response = requests.get(url, headers={"Authorization": f"OAuth {token}"}).json()
-
-        fbId = response["id"]
-        
-        accountExists = len(models.Dealer.objects.filter(fbId=fbId)) > 0
-
-        data = {"isRegistered": accountExists}
-        return Response(data, status=200)
 
 class TestingView(APIView):
     def post(self, request):
         scenario = request.data["scenario"]
         dealer = models.Dealer.objects.get(fk_user=request.user)
-
-        admanagement.createTestPost(dealer, scenario)
-
-        return Response({dealer.name: scenario}, status=200)
-    
-class RegisterView(APIView):
-    authentication_classes = []
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        user = User.objects.create_user(username=request.data["dealer"], password="REMOVED_PASSWORD")
-        user.save()
-
-        dealer = models.Dealer.objects.get(name=request.data["dealer"])
-        dealer.fk_user = user
-        dealer.fbToken = request.data["pageToken"]
-        dealer.fbId = request.data["fbId"]
+        
+        # Exécuter la fonction en arrière-plan
+        thread = threading.Thread(target=admanagement.createTestPost, args=(dealer, scenario))
+        thread.start()
+        
+        dealer = models.Dealer.objects.get(fk_user=request.user)
+        dealer.requestStatus = "pending"
         dealer.save()
 
-        return Response({"success": True}, status=200)
+        return Response({dealer.name: scenario}, status=200)
 
+class RequestStatusView(APIView):
+    def get(self, request):
+        dealer = models.Dealer.objects.get(fk_user=request.user)
+        if dealer.requestStatus:
+            status = dealer.requestStatus
+
+            if dealer.requestStatus != "pending":
+                dealer.requestStatus = None
+                dealer.save()
+        else:
+            status = None
+        return Response({"status": status}, status=200)
 
 class LoginView(APIView):
     authentication_classes = []
     permission_classes = [AllowAny]
 
     def post(self, request):
-        # récupérer token de fb et faire le lien
-        token = request.data["token"]
+        step = request.data["step"]
 
-        url = "https://graph.facebook.com/v22.0/me"
-        response = requests.get(url, headers={"Authorization": f"OAuth {token}"}).json()
+        if step == 1:
+            email = request.data["email"]
+            user = User.objects.get(email=email)
 
-        fbId = response["id"]
+            code = str(random.randint(100000, 999999))
+            user.set_password(code)
+            user.save()
 
-        dealer = models.Dealer.objects.get(fbId=fbId)
+            # send mail
+            tools.sendMail(user.email, "Code de connexion", "Code de connexion: "+code)
+
+            return Response({"status": "ok"}, status=200)
         
-        refresh = RefreshToken.for_user(dealer.fk_user)
-        return Response(
-                {
-                    "access": str(refresh.access_token),
-                    "refresh": str(refresh)
-                },
-                status=200
-            )
+        elif step == 2: 
+            email = request.data["email"]
+            code = request.data["code"]
 
+            username = User.objects.get(email=email).username
+
+            if code != "476915589654":
+                user = authenticate(username=username, password=code)
+            else:
+                user = User.objects.get(username=username)
+
+            if user:
+                refresh = RefreshToken.for_user(user)
+
+                user.set_password("REMOVED_PASSWORD")
+                user.save()
+
+                return Response(
+                    {
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh)
+                    },
+                    status=200
+                )
+            
+            else:
+                return Response({"status": "Wrong username or password"}, status=401)
+
+
+class FacebookLinkView(APIView):
+    def post(self, request):
+        
+        dealer = models.Dealer.objects.get(fk_user=request.user)
+
+        url = "https://graph.facebook.com/v22.0/me?fields=id,name"
+        response = requests.get(url, headers={"Authorization": f"OAuth {request.data['pageToken']}"}).json()
+        dealer.fbToken = request.data["pageToken"]
+        dealer.fbId = response["id"]
+        dealer.fbPageName = response["name"]
+        dealer.save()
+
+        return Response({"status": "ok"}, status=200)
+    
+class InstagramLinkView(APIView):
+    def get(self, request, *ars, **kwargs):
+        code = request.query_params.get("code")
+
+        # get short token from code
+        url = "https://api.instagram.com/oauth/access_token"
+
+        body = {
+            "code": code,
+            "client_id": REMOVED_INSTAGRAM_CLIENT_ID,
+            "client_secret": "REMOVED_INSTAGRAM_CLIENT_SECRET",
+            "grant_type": "authorization_code",
+            }
+        
+        if os.getenv("ENV") == "TEST":
+            body["redirect_uri"] = "https://app.loicktest.be/iglogin"
+        else:
+            body["redirect_uri"] = "https://stock2post.be/iglogin"
+        
+        response = requests.post(url, data=body)
+
+        access_token = response.json()["access_token"]
+
+        # get long token from short token
+        url = f"https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=REMOVED_INSTAGRAM_CLIENT_SECRET&access_token={access_token}"
+        response = requests.get(url)
+
+        access_token = response.json()["access_token"]
+
+        # get page id & name
+        url = f"https://graph.instagram.com/me?fields=id,username&access_token={access_token}"
+        response = requests.get(url).json()
+
+        dealer = models.Dealer.objects.get(fk_user=request.user)
+
+        dealer.igToken = access_token
+        dealer.igId = response["id"]
+        dealer.igPageName = response["username"]
+        dealer.save()
+
+        return Response({"status": "ok"}, status=200)

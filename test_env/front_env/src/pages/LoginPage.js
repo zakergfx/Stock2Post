@@ -9,66 +9,35 @@ import { useNavigate } from 'react-router-dom';
 function LoginPage() {
     const navigate = useNavigate();
 
-    const { loginUser, isRegisterInProgress, setIsRegisterInProgress, pageToken, fbId } = useContext(AuthContext)
-    const [dealers, setDealers] = useState([])
-    const [selectedDealer, setSelectedDealer] = useState("")
+    const { step, loginStep1, loginStep2 } = useContext(AuthContext)
+    const [email, setEmail] = useState()
+    const [code, setCode] = useState()
 
-    async function handleSyncButtonClick() {
-        if (selectedDealer != "") {
-            const data = { "dealer": selectedDealer, "fbId": fbId, "pageToken": pageToken }
-            const response = await Api.fetchPost("/api/register/", data, false)
-            setIsRegisterInProgress(false)
 
-            // login
-            const success = (await loginUser(pageToken)).success
-            if (success) {
-                Alert.success("Connecté !")
-                navigate("/main")
-            }
-            else {
-                Alert.error("Erreur lors de la connexion")
-            }
-
-        }
-        else {
-            alert("Veuillez sélectionner une page autoscout")
+    async function handleLoginStep2(){
+        const response = await loginStep2(email, code)
+        if (response.success){
+            navigate("/profil")
         }
 
     }
-
-    useEffect(() => {
-        if (isRegisterInProgress) {
-            getFreeDealers()
-        }
-
-        async function getFreeDealers() {
-            const response = await Api.fetchGet("/api/dealers", false)
-            console.log(response)
-            setDealers(response.detail)
-        }
-
-
-    }, [isRegisterInProgress])
+ 
 
     return (<div className="LoginPage">
         <div className="Content">
             <h1>Page de connexion</h1>
-            <h2>Comment se connecter ?</h2>
-            <span>1. Connectez-vous avec Facebook</span>
-            <span>2. Sélectionnez votre page Facebook</span>
-            <span>3. Si c'est votre <b>première connexion</b>, sélectionnez votre stock AutoScout</span>
-            <FacebookLoginButton />
-            {isRegisterInProgress && dealers ?
-                <div className="RegisterProgress">
-                    <span className="Wide">Choisissez une page à synchroniser</span>
-                    <select value={selectedDealer} onChange={(e) => setSelectedDealer(e.target.value)}>
-                        <option value="">-- Sélectionnez --</option>
-                        {dealers.map((value, index) => <option key={index}>{value.name}</option>)}
-                    </select>
-                    <button className="Primary" onClick={handleSyncButtonClick}>Confirmer</button>
-                </div>
-                : null
+            {step == 1 ? <>
+                <label htmlFor="mail">Adresse mail</label>
+                <input key="2" placeholder="abc@example.com" id="mail" value={email} onChange={(e) => setEmail(e.target.value)}></input>
+                <button className="Primary" onClick={() => loginStep1(email)}>Recevoir un code par mail</button>
+
+            </> : <>
+                <label htmlFor="code">Code</label>
+                <input min="0" type="number" key="1" placeholder="------" id="code" value={code} onChange={(e) => setCode(e.target.value)}></input>
+                <button className="Primary" onClick={handleLoginStep2}>Se connecter</button>
+            </>
             }
+
         </div>
     </div>)
 

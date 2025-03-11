@@ -16,31 +16,17 @@
         margin-left: 0.5rem;
         margin-right: 0.5rem;
 
-
-
         display: flex;
         flex-direction: column;
+
+        gap: 1rem;
+
 
         span {
 
             line-height: 3;
         }
 
-
-        .FbLogin{
-            margin-top: 3rem;
-        }
-        .RegisterProgress {
-            margin-top: 3rem;
-
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-
-            column-gap: 3rem;
-
-            .Wide {
-                grid-column: span 2;
-            }
-        }
     }
 }
+

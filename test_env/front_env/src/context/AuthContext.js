@@ -1,53 +1,86 @@
 import { createContext, useState, useEffect } from 'react'
 import { jwtDecode } from "jwt-decode";
 import * as Var from "../utils/Var"
+import * as Api from "../utils/Api"
 import { useNavigate } from 'react-router-dom';
+import Alert from '../components/Alert';
 
 export const AuthContext = createContext()
 
 export function AuthProvider({ children }) {
 
     const navigate = useNavigate();
-
+    const [step, setStep] = useState(1)
     const [access, setAccess] = useState(() => localStorage.getItem("access") ? localStorage.getItem("access") : null)
     const [refresh, setRefresh] = useState(() => localStorage.getItem("refresh") ? localStorage.getItem("refresh") : null)
     const [user, setUser] = useState(() => localStorage.getItem("access") ? jwtDecode(localStorage.getItem("access")) : null)
     const [loading, setLoading] = useState(true)
 
-    const [isRegisterInProgress, setIsRegisterInProgress] = useState(false)
     const [pageToken, setPageToken] = useState()
     const [fbId, setFbId] = useState()
 
+    async function fbLogin(pageToken){
+        const body = {"pageToken": pageToken}
+        const response = await Api.fetchPost("/api/facebooklink/", body)
 
-    async function loginUser(token) {
-        let response = await fetch(Var.backendUrl + "/api/login/", {
-            method: "POST",
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 'token': token})
-        })
-        let data = await response.json()
+        if (response.success){
+            Alert.success("Page Facebook liée !")
+        }
+        else{
+            Alert.error("Impossible de lier la page Facebook")
+        }
+    }
 
-        if (response.ok) {
-            setAccess(data.access)
-            setRefresh(data.refresh)
-            setUser(jwtDecode(data.access))
+    async function loginStep1(email) {
+        if (email) {
+            const body = { "step": 1, "email": email }
+            const response = await Api.fetchPost("/api/login/", body, false)
 
-            localStorage.setItem("access", data.access)
-            localStorage.setItem("refresh", data.refresh)
-
-            return ({ "success": response.ok, "detail": "Connexion réussie" })
-
+            if (response.success) {
+                Alert.success("Vous avez reçu un code par mail")
+                setStep(2)
+            }
+            else {
+                Alert.error("Votre adresse mail est incorrect")
+            }
         }
         else {
-            return ({ "success": response.ok, "detail": data.detail })
+            Alert.error("Veuillez entrer une adresse mail")
         }
 
     }
 
+    async function loginStep2(email, code) {
+        if (code) {
+            const body = { "step": 2, "email": email, "code": code }
+            const response = await Api.fetchPost("/api/login/", body, false)
 
-  
+            if (response.success) {
+                const data = response.detail
+                setAccess(data.access)
+                setRefresh(data.refresh)
+                setUser(jwtDecode(data.access))
+
+                localStorage.setItem("access", data.access)
+                localStorage.setItem("refresh", data.refresh)
+
+                Alert.success("Connecté !")
+                return { "success": true }
+
+            }
+            else {
+                Alert.error("Erreur lors de la connexion")
+                return { "success": false }
+
+            }
+        }
+        else {
+            Alert.error("Veuillez entrer le code")
+            return { "success": false }
+        }
+
+    }
+
     function logoutUser() {
         console.log("logout")
         setAccess(null)
@@ -70,24 +103,24 @@ export function AuthProvider({ children }) {
             })
 
 
-            try{
+            try {
                 let data = await response.json()
 
                 if (response.status === 200) {
                     setAccess(data.access)
-    
+
                     setUser(jwtDecode(data.access))
                     localStorage.setItem("access", data.access)
                 }
                 else {
-    
+
                     logoutUser()
                 }
             }
-            catch{
+            catch {
                 logoutUser()
             }
-           
+
         }
 
 
@@ -99,10 +132,11 @@ export function AuthProvider({ children }) {
 
     let contextData = {
         user: user,
-        loginUser: loginUser,
+        loginStep1: loginStep1,
+        loginStep2: loginStep2,
+        fbLogin: fbLogin,
+        step: step,
         logoutUser: logoutUser,
-        isRegisterInProgress: isRegisterInProgress,
-        setIsRegisterInProgress: setIsRegisterInProgress,
         pageToken: pageToken,
         setPageToken: setPageToken,
         fbId: fbId,

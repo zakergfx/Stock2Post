@@ -1,16 +1,17 @@
 import React from 'react';
-import FacebookLogin from 'react-facebook-login';
+// import FacebookLogin from 'react-facebook-login';
 import * as Api from "../utils/Api"
 import { AuthContext } from '../context/AuthContext.js'
 import { useContext } from 'react';
 import Alert from '../components/Alert.js'
 import { useNavigate } from 'react-router-dom';
-
+import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props'
+import "../styles/login.scss"
 
 function FacebookLoginButton() {
   const navigate = useNavigate();
 
-  const { loginUser, setIsRegisterInProgress, setFbId, setPageToken } = useContext(AuthContext)
+  const { setFbId, setPageToken, fbLogin } = useContext(AuthContext)
 
 
   function responseFacebook(response) {
@@ -22,9 +23,8 @@ function FacebookLoginButton() {
   async function login(userToken) {
     // récupération user id
     let response = await fetch(`https://graph.facebook.com/v22.0/me?access_token=${userToken}&fields=id,name`)
-    
-    console.log(userToken)
-    
+
+
     const userId = (await response.json()).id
 
 
@@ -36,28 +36,14 @@ function FacebookLoginButton() {
     response = await fetch(`https://graph.facebook.com/v22.0/${userId}/accounts?access_token=${longUserToken}`)
     const data = (await response.json()).data
 
-    console.log(data)
 
     // vérification que l'user a choisi une seule page
     if (data.length === 1) {
       const longPageToken = data[0].access_token
       setPageToken(longPageToken)
+      const response = await fbLogin(longPageToken)
       setFbId(data[0].id)
-      const isRegistered = (await Api.fetchPost("/api/isregistered/", { "token": longPageToken })).detail.isRegistered
 
-      if (!isRegistered) {
-        setIsRegisterInProgress(true)
-      }
-      else {
-        const success = (await loginUser(longPageToken)).success
-        if (success) {
-          Alert.success("Connecté !")
-          navigate("/main")
-        }
-        else {
-          Alert.error("Erreur lors de la connexion")
-        }
-      }
 
 
     }
@@ -76,8 +62,11 @@ function FacebookLoginButton() {
         fields="name,email,picture"
         scope="email,pages_show_list,pages_read_engagement,pages_manage_posts,public_profile"
         callback={responseFacebook}
-        icon="fa-facebook"
-        textButton="Se connecter avec Facebook"
+        render={renderProps => (
+          <button className="FbButton" onClick={renderProps.onClick}>LIER VOTRE PAGE FACEBOOK</button>
+        )}
+        // icon="fa-facebook"
+        // textButton="Lier votre page Facebook"
       />
     </div>
   );

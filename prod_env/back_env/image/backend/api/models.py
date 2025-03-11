@@ -28,10 +28,17 @@ class Dealer(models.Model):
     mail = models.CharField(max_length=500)
     phone = models.CharField(max_length=500)
 
+    fbPageName = models.CharField(default=None, null=True, blank=True, max_length=500)
     fbId = models.PositiveIntegerField(default=None, blank=True, null=True)
-    token = models.CharField(max_length=500, null=True, blank=True)
+    fbToken = models.CharField(max_length=500, null=True, blank=True)
+
+    igPageName = models.CharField(default=None, null=True, blank=True, max_length=500)
+    igId = models.PositiveIntegerField(default=None, blank=True, null=True)
+    igToken = models.CharField(max_length=500, null=True, blank=True)
 
     isInit = models.BooleanField(default=False)
+
+    requestStatus = models.CharField(max_length=500, default=None, null=True, blank=True)
 
     fk_settings = models.OneToOneField(Settings, on_delete=models.CASCADE)
     fk_user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, blank=True, null=True)
