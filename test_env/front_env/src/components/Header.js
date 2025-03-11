@@ -28,6 +28,7 @@ function Header() {
         <a href="/#home"><b>Stock<span className="Colored">2Post</span></b></a>
         <a href="/#features">Fonctionnalités</a>
         <a href="/main">Administration</a>
+        <a href="/profil">Profil</a>
         <a href="/#contact">Contact</a>
         {user ? <a className="Log" href="" onClick={logoutUser}>Se déconnecter</a> : <a className="Log" href="/login">Se connecter</a>}
       </div>)
@@ -41,6 +42,7 @@ function Header() {
         <a href="/#home" onClick={() => setIsHeaderDisplayed(false)}><b>Stock<span className="Colored">2Post</span></b></a>
         <a href="/#features" onClick={() => setIsHeaderDisplayed(false)}>Fonctionnalités</a>
         <a href="/main" onClick={() => setIsHeaderDisplayed(false)}>Administration</a>
+        <a href="/profil" onClick={() => setIsHeaderDisplayed(false)}>Profil</a>
         <a href="/#contact" onClick={() => setIsHeaderDisplayed(false)}>Contact</a>
         {user ? <a className="Log" href="" onClick={logoutUser}>Se déconnecter</a> : <a className="Log" href="/login">Se connecter</a>}
       </div>

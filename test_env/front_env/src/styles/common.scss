@@ -14,7 +14,14 @@ h1 {
     font-size: 2.5rem;
 }
 
+input, textarea{
+    border: none;
+
+}
+
 button, input[type="Submit"] {
+    border: none;
+
     cursor: pointer;
     padding-right: 2rem;
     padding-left: 2rem;
@@ -44,6 +51,7 @@ a {
     text-decoration: none;
 
     &.Button {
+        border: none;
 
         padding-right: 2rem;
         padding-left: 2rem;

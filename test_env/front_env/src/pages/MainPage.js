@@ -8,6 +8,7 @@ import { MainContext } from '../context/MainContext.js'
 import Alert from '../components/Alert.js'
 import Toggle from '../components/Toggle.js'
 
+
 function MainPage() {
     const { isMobile } = useContext(MainContext)
 
@@ -31,20 +32,64 @@ function MainPage() {
 
     const [testMode, setTestMode] = useState(false)
 
+    async function getRequestStatus() {
+        const response = await Api.fetchGet("/api/requeststatus")
+        // console.log(response.detail.status)
 
+        return response.detail.status
+    }
+
+    // useEffect(() => {
+    //     getRequestStatus()
+    //     setInterval(getRequestStatus, 5000)
+        
+    // }, [])
+
+    function promise() {
+
+        return new Promise(async (resolve, reject) => {
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            while (true) {
+                const status = await getRequestStatus()
+                if (status === "success")
+                    resolve("Success !")
+                else if (status === "error")
+                    reject(("Error !"))
+
+                await sleep(5000)
+                console.log("status: "+status)
+            }
+        })
+    }
 
     async function testingPost(e) {
         e.preventDefault()
-        console.log("Envoi de la demande de création du post")
-        Alert.info("Test en cours. Celà peut prendre jusqu'à 1 minute.")
-        const success = (await Api.fetchPost("/api/testing/", { "scenario": parseInt(e.target.id) })).success
-        console.log(success)
-        if (success) {
-            Alert.success("Le post a bien été créé.")
+        const requestInProgress = await getRequestStatus()
+        if (requestInProgress !== "pending") {
+
+            console.log("Envoi de la demande de création du post")
+            const success = (await Api.fetchPost("/api/testing/", { "scenario": parseInt(e.target.id) })).success
+            console.log(success)
+            if (success) {
+                // création promesse
+                // promise()
+                //     .then(result => console.log(result))
+                //     .catch(error => console.log(error))
+
+               Alert.promise(promise)
+            }
+            else {
+                Alert.error("La demande de création de post n'a pas pu aboutit")
+            }
         }
         else {
-            Alert.error("Le post n'a pas pu être créé.")
+            Alert.error("Vous avez déjà une requête en attente")
         }
+
     }
 
     // récupération infos dealers
@@ -100,13 +145,13 @@ function MainPage() {
     function handleOldCarHz(e) {
         const hz = parseInt(e.target.value)
         setOldCarHz(hz)
-        setEnablePostOldCar(hz!==0)
+        setEnablePostOldCar(hz !== 0)
     }
 
     function handleSummaryHz(e) {
         const hz = parseInt(e.target.value)
         setSummaryHz(hz)
-        setEnablePostStockSummary(hz!==0)
+        setEnablePostStockSummary(hz !== 0)
     }
 
     return (<div className="MainPage">
@@ -114,10 +159,10 @@ function MainPage() {
 
             <div className="Title">
                 <h1>Page de configuration </h1>
-                <div className="Testmode">
+                {(dealerInfos.igToken || dealerInfos.fbToken) && <div className="Testmode">
                     <span>Activer le mode Test</span>
                     <Toggle isActive={testMode} setFct={setTestMode} />
-                </div>
+                </div>}
             </div>
             <div className="Settings">
                 <form className={testMode ? "Test" : "Prod"}>
@@ -140,14 +185,14 @@ function MainPage() {
                         <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
                         {testMode && <button id="0" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
-                        <div className="Setting">
-                            <b>Publier également une Story</b>
-                            <span>En plus de créer un post Facebook annonçant le nouvel arrivage, une story sera également publiée.</span>
+                        {/* <div className="Setting">
+                            <b>Créer une story quand un véhicule est ajouté à votre catalogue</b>
+                            <span>Quand un véhicule est ajouté à votre catalogue AutoScout, une story sera créée.</span>
                         </div>
 
                         <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
                         {testMode && <button id="6" onClick={testingPost}>Tester</button>}
-                        {testMode && isMobile && <span />}
+                        {testMode && isMobile && <span />} */}
 
                         <div className="Setting">
                             <b>Créer un post quand un véhicule a été vendu</b>

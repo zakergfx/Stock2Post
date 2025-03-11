@@ -5,12 +5,13 @@ urlpatterns = [
 
     path("dealers/", views.DealersView.as_view()),
     path("me/", views.MeView.as_view()),
+    path("requeststatus/", views.RequestStatusView.as_view()),
     path("sendmail/", views.SendMailView.as_view()),
     path("dealers/<str:dealer>/", views.DealerSpecificView.as_view()),
     path("dealers/<str:dealer>/settings/", views.SettingsSpecificView.as_view()),
     path("login/", views.LoginView.as_view()),
-    path("isregistered/", views.IsRegisteredView.as_view()),
-    path("register/", views.RegisterView.as_view()),
+    path("facebooklink/", views.FacebookLinkView.as_view()),
+    path("instagramlink/", views.InstagramLinkView.as_view()),
     path("testing/", views.TestingView.as_view())
 
 ]

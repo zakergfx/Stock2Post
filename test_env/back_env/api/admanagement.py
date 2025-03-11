@@ -7,7 +7,6 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from . import models, tools, ig
-from difflib import SequenceMatcher
 import hashlib
 import cv2
 import numpy as np
@@ -16,7 +15,7 @@ BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
     dealer = models.Dealer.objects.first()
-    videoUrl = "https://stock2post.be/api/media/diaporama.mov"
+    videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
     message = "post via script python"
     
     mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
@@ -605,9 +604,7 @@ def createPost(ad, msg, dealer):
 
     ad.save()
     response = requests.post(url, json=body)
-    if (response.status_code == 200):
-        ad.isPublished = True
-        ad.save()
+
 
 
 def createRecap(msg, dealer):
@@ -620,29 +617,50 @@ def createRecap(msg, dealer):
 def postNewAds(dealer):
     ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
     for ad in ads:
-        if (dealer.fbToken): # si lié à FB
-            if ad.date > dealer.fk_settings.lastNewCarPostEnabled:
-                msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+        if ad.date > dealer.fk_settings.lastNewCarPostEnabled:
+            msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
 
             if dealer.fbToken:
                 createPost(ad, msg, dealer)
 
             if dealer.igToken:
                 imageUrls = ad.pictures.split("-----")
+                print("0")
                 mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
+                print("1")
                 ig.publishMedia(dealer, mediaId)
+                print("2")
 
             if dealer.fk_settings.createNewCarStory:
                 if dealer.fbToken:
                     postNewAdStory(dealer, ad)
                 if dealer.igToken:
-                    videoUrl = "https://stock2post.be/api/media/diaporama.mov"
+                    videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
                     message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-                    mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
-                    ig.publishMedia(dealer, mediaId)
+                    # mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
+                    # ig.publishMedia(dealer, mediaId)
                     mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
                     ig.publishMedia(dealer, mediaId)
 
+            ad.isPublished = True
+            ad.save()
+
+def postNewAdsStory(dealer):
+    ads = models.Ad.objects.filter(isPublished=False, fk_dealer=dealer)
+    for ad in ads:
+        if ad.date > dealer.fk_settings.lastNewCarPostEnabled:
+            if dealer.fbToken:
+                postNewAdStory(dealer, ad)
+            if dealer.igToken:
+                videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
+                message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
+                mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
+                ig.publishMedia(dealer, mediaId)
+                # mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
+                # ig.publishMedia(dealer, mediaId)
+
+            ad.isPublished = True
+            ad.save()
 
 def postNewAdStory(dealer, ad):
     print("Creating new car story")
@@ -661,7 +679,7 @@ def publishVideo(dealer):
 
     # upload the video
     url = f"https://rupload.facebook.com/video-upload/v22.0/{videoId}"
-    videoPath = "media/diaporama.mov"
+    videoPath = "media/diaporama.mp4"
     headers = {"Authorization": f"OAuth {dealer.fbToken}", "offset": "0", "file_size": str(os.path.getsize(videoPath)), "Content-Type": "video/quicktime"}
 
     with open(videoPath, "rb") as f:
@@ -728,7 +746,6 @@ def postSoldAds(dealer):
 
         if dealer.igToken:
             # impossible de faire ca avec une adresse local
-            imageUrl = f'https://stock2post.be/api/media/modifiedFile.jpg'
             imageUrls = ad.pictures.split("-----")
             mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
             ig.publishMedia(dealer, mediaId)
@@ -793,8 +810,7 @@ def createTestPost(dealer, scenario):
         if dealer.igToken:
             # impossible de faire ca avec une adresse local
             imageUrl = f'https://stock2post.be/api/media/modifiedFile.jpg'
-            imageUrls = ad.pictures.split("-----")
-            mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
+            mediaId = ig.createImageContainer(dealer, imageUrl, msg)
             ig.publishMedia(dealer, mediaId)
     
     elif scenario == 2:
@@ -856,14 +872,17 @@ def createTestPost(dealer, scenario):
             publishVideo(ad.fk_dealer)
 
         if dealer.igToken:
-            videoUrl = "https://stock2post.be/api/media/diaporama.mov"
+            videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
             message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
             
             mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
             ig.publishMedia(dealer, mediaId)
 
-            mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
-            ig.publishMedia(dealer, mediaId)
+            #mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
+            #ig.publishMedia(dealer, mediaId)
+
+    dealer.requestStatus = "success"
+    dealer.save()
 
 
 def scheduledTask():
@@ -893,6 +912,8 @@ def scheduledTask():
                     postEditedAds(dealer)
                 if dealer.fk_settings.createNewCarPost:
                     postNewAds(dealer)
+                if dealer.fk_settings.createNewCarStory:
+                    postNewAdsStory(dealer)
                 if dealer.fk_settings.createSoldCarPost:
                     postSoldAds(dealer)
                 if dealer.fk_settings.createOldCarPost: # + 2h chaque fois pour eviter le spam

@@ -14,6 +14,9 @@ import { ToastContainer } from 'react-toastify';
 import HomePage from './pages/HomePage';
 import ExamplePage from './pages/ExamplePage';
 import { useEffect, useContext } from 'react';
+import ProfilPage from './pages/ProfilPage';
+import IgLoginPage from './pages/IgLoginPage';
+
 
 function App() {
 
@@ -24,16 +27,27 @@ function App() {
           <AuthProvider>
             <MainProvider>
               <Header />
-              <ToastContainer />
+              <ToastContainer
+                position="bottom-right"
+                autoClose={3000}
+                hideProgressBar={false}
+                closeOnClick={true}
+                pauseOnHover={false}
+                draggable={true}
+                progress={undefined}
+                theme="dark"
+              />
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/main" element={<PrivateRoute element={MainPage} />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/profil" element={<PrivateRoute element={ProfilPage} />} />
+                <Route path="/iglogin" element={<PrivateRoute element={IgLoginPage} />} />
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/tos" element={<TosPage />} />
                 <Route path="/examples" element={<ExamplePage />}></Route>
               </Routes>
-              <Footer/>
+              <Footer />
             </MainProvider>
           </AuthProvider>
         </HelmetProvider>

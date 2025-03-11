@@ -1,0 +1,60 @@
+@import "common.scss";
+
+.ProfilPage {
+    background-color: $bgColor;
+    color: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+
+    .Content {
+        margin-top: 5rem;
+
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+
+
+
+        display: flex;
+        flex-direction: column;
+
+        span {
+
+            line-height: 3;
+        }
+
+
+        .RegisterProgress {
+            margin-top: 3rem;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            column-gap: 3rem;
+
+            .Wide {
+                grid-column: span 2;
+            }
+        }
+    }
+}
+
+.FbButton,
+.IgButton {
+    color: white;
+    width: 20rem;
+    margin-bottom: 3rem;
+
+    &.FbButton {
+        background-color: rgb(0, 69, 148);
+
+    }
+
+    &.IgButton {
+        background-color: rgb(153, 69, 0);
+
+    }
+}
