@@ -20,7 +20,7 @@ class SendMailView(APIView):
         body = f'Nom: {request.data["surname"]} {request.data["name"]}\nEntreprise: {request.data["company"]}\
         \nContact: {request.data["phone"]} {request.data["mail"]}\n\nMessage: {request.data["message"]}'
 
-        success = tools.sendMail("zakergfx@gmail.com", subject, body)
+        success = tools.sendMail("REMOVED_EMAIL", subject, body)
         
         return Response({"success": success}, status=200)
 

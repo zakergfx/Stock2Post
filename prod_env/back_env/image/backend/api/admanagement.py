@@ -801,7 +801,7 @@ def createTestPost(dealer, scenario):
             createPost(ad, msg, dealer)
 
         if dealer.igToken:
-            coverUrl = createInstagramCover(ad)
+            # coverUrl = createInstagramCover(ad)
             # imageUrls = [coverUrl]+ad.pictures.split("-----")
             imageUrls = ad.pictures.split("-----")
             mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
