@@ -40,11 +40,39 @@ class DealerSpecificView(APIView):
         serializer = serializers.DealerSerializer(dealer)
         return Response(serializer.data, status=200)
     
+    def patch(self, request, dealer):
+        user = request.user
+        dealer = models.Dealer.objects.get(name=dealer)
+
+        valid = True
+        if user == dealer.fk_user:
+
+            if "mail" in request.data:
+                if tools.isValidEmail(request.data["mail"]):
+                    print(request.data["mail"])
+                    dealer.mail = request.data["mail"]
+                else:
+                    valid = False
+
+            if "phone" in request.data:
+                if tools.isValidPhoneNumber(request.data["phone"]):
+                    print(request.data["phone"])
+                    dealer.phone = request.data["phone"]
+                else:
+                    valid = False
+
+            if valid:
+                dealer.save()
+                return Response({"status": "success"}, status=200)
+            else:
+                return Response({"status": "failed"}, status=400)
+
+
+    
 class MeView(APIView):
     def get(self, request):
-
         dealer = models.Dealer.objects.get(fk_user=request.user)
-        data = {"fbPageName": dealer.fbPageName, "igPageName": dealer.igPageName, "user": dealer.name}
+        data = {"dealerName": dealer.name, "fbPageName": dealer.fbPageName, "igPageName": dealer.igPageName, "user": dealer.name, "mail": dealer.mail, "phone": dealer.phone}
         return Response(data, status=200)
 
     

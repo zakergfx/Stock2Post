@@ -39,22 +39,36 @@
                 grid-column: span 2;
             }
         }
+
+        input{
+            height: 2rem;
+        }
+
+        .Small{
+            width: 20rem;
+            margin-top: 1rem;
+        
+        }
+        
+        
+        .FbButton,
+        .IgButton {
+            color: white;
+            width: 20rem;
+            margin-top: 1rem;
+            margin-bottom: 3rem;
+        
+            &.FbButton {
+                background-color: rgb(0, 69, 148);
+        
+            }
+        
+            &.IgButton {
+                background-color: rgb(153, 69, 0);
+        
+            }
+        }
     }
+
 }
 
-.FbButton,
-.IgButton {
-    color: white;
-    width: 20rem;
-    margin-bottom: 3rem;
-
-    &.FbButton {
-        background-color: rgb(0, 69, 148);
-
-    }
-
-    &.IgButton {
-        background-color: rgb(153, 69, 0);
-
-    }
-}
