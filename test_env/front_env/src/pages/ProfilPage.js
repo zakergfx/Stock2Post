@@ -10,19 +10,41 @@ function ProfilPage() {
     const navigate = useNavigate();
     const [me, setMe] = useState()
 
-    const { fbId } = useContext(AuthContext)
+    const [phone, setPhone] = useState()
+    const [mail, setMail] = useState()
+
+    const [inEdit, setInEdit] = useState(false)
+    const { fbId, igId } = useContext(AuthContext)
+
+    async function getMe() {
+        const response = await Api.fetchGet("/api/me")
+        setMe(response.detail)
+    }
 
     useEffect(() => {
 
-        async function me() {
-            const response = await Api.fetchGet("/api/me")
-            setMe(response.detail)
+        getMe()
+
+    }, [fbId, igId])
+
+    async function handleEditClick(){
+        setInEdit(true)
+        setPhone(me.phone)
+        setMail(me.mail)
+    }
+
+    async function handleSaveClick() {
+        setInEdit(false)
+        const body = { "phone": phone, "mail": mail }
+        const response = await Api.fetchPatch(`/api/dealers/${me.dealerName}/`, body)
+        if (response.success){
+            await getMe()
+            Alert.success("Informations mises à jour !")
         }
 
-        me()
-
-    }, [fbId])
-
+        else
+            Alert.error("Erreur dans le format des champs.")
+    }
 
     if (me)
         return (<div className="ProfilPage">
@@ -56,6 +78,19 @@ function ProfilPage() {
                 }
                 {/* <button className="IgButton" onClick={() => window.location.replace(`https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=REMOVED_INSTAGRAM_CLIENT_ID&redirect_uri=https://${process.env.REACT_APP_SERVERNAME}/iglogin&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights`)} >LIER VOTRE PAGE INSTAGRAM</button> */}
                 <button className="IgButton" onClick={() => window.location.replace(`https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=REMOVED_INSTAGRAM_CLIENT_ID&redirect_uri=https://${process.env.REACT_APP_SERVERNAME}/iglogin&response_type=code&scope=instagram_business_basic%2Cinstagram_business_content_publish`)} >LIER VOTRE PAGE INSTAGRAM</button>
+
+                <h2>Vos informations</h2>
+                {!inEdit ? <>
+                    <span><b>Numéro de téléphone : </b>{me.phone}</span>
+                    <span><b>Adresse mail : </b>{me.mail}</span>
+                    <button className="Primary Small" onClick={handleEditClick}>Modifier</button>
+                </> :
+                    <>
+                        <span><b>Numéro de téléphone : </b><input value={phone} onChange={(e) => setPhone(e.target.value)}></input></span>
+                        <span><b>Adresse mail : </b><input value={mail} onChange={(e) => setMail(e.target.value)}></input></span>
+                        <button className="Primary Small" onClick={handleSaveClick}>Sauvegarder</button>
+                    </>}
+
 
             </div>
         </div >)

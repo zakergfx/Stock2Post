@@ -1,4 +1,4 @@
-import random, time, string, smtplib
+import random, time, string, smtplib, re
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -9,6 +9,20 @@ def formatDate(date):
         return f"{year}/{month}"
     except:
         return date
+
+def isValidEmail(email):
+    # Expression régulière pour valider une adresse email
+    regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
+    
+    # Vérifie si l'email correspond à l'expression régulière
+    return re.match(regex, email)
+
+def isValidPhoneNumber(phone):
+    for number in phone:
+        if not number.isdigit() and number != " ":
+            return False
+        
+    return len(phone) >= 9
 
 def formatKm(km):
     return int(km.replace(" ", "").replace("\u202f", "")[:-2])
