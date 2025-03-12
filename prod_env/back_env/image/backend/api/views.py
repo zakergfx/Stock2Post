@@ -83,6 +83,7 @@ class RequestStatusView(APIView):
         if dealer.requestStatus:
             status = dealer.requestStatus
 
+            print(dealer.requestStatus)
             if dealer.requestStatus != "pending":
                 dealer.requestStatus = None
                 dealer.save()

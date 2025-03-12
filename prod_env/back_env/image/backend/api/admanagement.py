@@ -14,12 +14,13 @@ import numpy as np
 BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    dealer = models.Dealer.objects.first()
-    videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
-    message = "post via script python"
-    
-    mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
-    ig.publishMedia(dealer, mediaId)
+    ad = models.Ad.objects.first()
+    createInstagramCover(ad)
+
+def createInstagramCover(ad):
+    img = create_slide(ad, ad.mainPicture, 1080, 1920)
+    cv2.imwrite("media/cover.jpg", img)
+    return "https://stock2post.be/api/media/cover.jpg"
 
 def init(dealer):
     adsSold, adsToAdd, adsToEdit = getAdsChanges(dealer.name, editedAds=False)
@@ -89,7 +90,7 @@ def putStats(rect_top, largeur, textes, draw):
     # Pas besoin de retourner quoi que ce soit car draw modifie directement img_pil
 
 def createVideo(ad):
-    sortie = "media/diaporama.mov"
+    sortie = "media/diaporama0.mov"
     fps = 30  # Augmenter les FPS pour des transitions plus fluides
     duree_par_image = 3
     duree_transition = 1  # Durée de la transition en secondes
@@ -134,7 +135,12 @@ def createVideo(ad):
                 video.write(blended)
 
     video.release()
+
     print(f"Diaporama créé avec succès : {sortie}")
+    if os.path.exists("media/diaporama.mov"):  # Vérifie si le fichier existe
+        os.remove("media/diaporama.mov")
+    os.system(f"ffmpeg -i {sortie} -c:v libx264 -b:v 5M -maxrate 25M -bufsize 10M -preset slow -c:a aac -b:a 128k media/diaporama.mov")
+    print("Conversion encodage fini !")
 
 def create_slide(ad, image_url, hauteur, largeur):
     """Crée une diapositive complète avec l'image et tous les textes"""
@@ -635,7 +641,7 @@ def postNewAds(dealer):
                 if dealer.fbToken:
                     postNewAdStory(dealer, ad)
                 if dealer.igToken:
-                    videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
+                    videoUrl = "https://stock2post.be/api/media/diaporama.mov"
                     message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
                     # mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
                     # ig.publishMedia(dealer, mediaId)
@@ -652,7 +658,7 @@ def postNewAdsStory(dealer):
             if dealer.fbToken:
                 postNewAdStory(dealer, ad)
             if dealer.igToken:
-                videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
+                videoUrl = "https://stock2post.be/api/media/diaporama.mov"
                 message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
                 mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
                 ig.publishMedia(dealer, mediaId)
@@ -679,14 +685,14 @@ def publishVideo(dealer):
 
     # upload the video
     url = f"https://rupload.facebook.com/video-upload/v22.0/{videoId}"
-    videoPath = "media/diaporama.mp4"
+    videoPath = "media/diaporama.mov"
     headers = {"Authorization": f"OAuth {dealer.fbToken}", "offset": "0", "file_size": str(os.path.getsize(videoPath)), "Content-Type": "video/quicktime"}
 
     with open(videoPath, "rb") as f:
         response = requests.post(url=url, json=body, headers=headers, data=f)
         response = response.json()
 
-    # publish as storyq
+    # publish as story
     url = f"https://graph.facebook.com/v22.0/{dealer.fbId}/video_stories"
     headers = {"Authorization": f"OAuth {dealer.fbToken}"}
     body = {"video_id": videoId, "upload_phase": "finish"}
@@ -703,16 +709,16 @@ def reuploadAds(weeks, dealer):
         if isTimestampOlderThan(weeks, ad.date):
             msg = f"""🚨🚨🚨{boldText("TOUJOURS DISPONIBLE")} 🚨🚨🚨\n\nCe modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")} est toujours disponible\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
         
-        if dealer.fbToken:
-            createPost(ad, msg, dealer)
+            if dealer.fbToken:
+                createPost(ad, msg, dealer)
 
-        if dealer.igToken:
-            imageUrls = ad.pictures.split("-----")
-            mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
-            ig.publishMedia(dealer, mediaId)
+            if dealer.igToken:
+                imageUrls = ad.pictures.split("-----")
+                mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
+                ig.publishMedia(dealer, mediaId)
 
-        ad.date = int(time.time())
-        ad.save()
+            ad.date = int(time.time())
+            ad.save()
 
 def postAdsRecap(weeks, dealer):
     ads = models.Ad.objects.filter(isPublished=True, fk_dealer=dealer)
@@ -795,6 +801,8 @@ def createTestPost(dealer, scenario):
             createPost(ad, msg, dealer)
 
         if dealer.igToken:
+            coverUrl = createInstagramCover(ad)
+            # imageUrls = [coverUrl]+ad.pictures.split("-----")
             imageUrls = ad.pictures.split("-----")
             mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
             ig.publishMedia(dealer, mediaId)
@@ -872,14 +880,14 @@ def createTestPost(dealer, scenario):
             publishVideo(ad.fk_dealer)
 
         if dealer.igToken:
-            videoUrl = "https://stock2post.be/api/media/diaporama.mp4"
+            videoUrl = "https://stock2post.be/api/media/diaporama.mov"
             message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
             
             mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
             ig.publishMedia(dealer, mediaId)
 
-            #mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
-            #ig.publishMedia(dealer, mediaId)
+            # mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
+            # ig.publishMedia(dealer, mediaId)
 
     dealer.requestStatus = "success"
     dealer.save()
