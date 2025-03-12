@@ -11,14 +11,16 @@ function HomePage() {
 
     const { isMobile } = useContext(MainContext)
 
-    const [formData, setFormData] = useState({
+
+    const defaultForm = {
         name: '',
         surname: '',
         phone: '',
         mail: '',
         company: '',
         message: ''
-    });
+    }
+    const [formData, setFormData] = useState(defaultForm);
 
     function handleChange(e) {
         const { id, value } = e.target;
@@ -31,8 +33,11 @@ function HomePage() {
     async function handleSubmit(e) {
         e.preventDefault()
         const response = await Api.fetchPost("/api/sendmail/", formData, false)
-        if (response.success)
+        if (response.success) {
             Alert.success("Mail envoyé !")
+            setFormData(defaultForm)
+        }
+
         else
             Alert.error("Echec de l'envoi du mail.")
     }
