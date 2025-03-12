@@ -42,7 +42,7 @@ function MainPage() {
     // useEffect(() => {
     //     getRequestStatus()
     //     setInterval(getRequestStatus, 5000)
-        
+
     // }, [])
 
     function promise() {
@@ -55,13 +55,18 @@ function MainPage() {
 
             while (true) {
                 const status = await getRequestStatus()
-                if (status === "success")
-                    resolve("Success !")
-                else if (status === "error")
-                    reject(("Error !"))
+                if (status === "success") {
 
+                    resolve("Success !")
+                    return
+                }
+
+                else if (status === "error") {
+                    reject(("Error !"))
+                    return
+                }
+                console.log("status: " + status)
                 await sleep(5000)
-                console.log("status: "+status)
             }
         })
     }
@@ -73,14 +78,8 @@ function MainPage() {
 
             console.log("Envoi de la demande de création du post")
             const success = (await Api.fetchPost("/api/testing/", { "scenario": parseInt(e.target.id) })).success
-            console.log(success)
             if (success) {
-                // création promesse
-                // promise()
-                //     .then(result => console.log(result))
-                //     .catch(error => console.log(error))
-
-               Alert.promise(promise)
+                Alert.promise(promise)
             }
             else {
                 Alert.error("La demande de création de post n'a pas pu aboutit")
@@ -185,14 +184,14 @@ function MainPage() {
                         <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
                         {testMode && <button id="0" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
-                        {/* <div className="Setting">
+                        <div className="Setting">
                             <b>Créer une story quand un véhicule est ajouté à votre catalogue</b>
                             <span>Quand un véhicule est ajouté à votre catalogue AutoScout, une story sera créée.</span>
                         </div>
 
                         <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
                         {testMode && <button id="6" onClick={testingPost}>Tester</button>}
-                        {testMode && isMobile && <span />} */}
+                        {testMode && isMobile && <span />}
 
                         <div className="Setting">
                             <b>Créer un post quand un véhicule a été vendu</b>
