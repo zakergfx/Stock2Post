@@ -7,7 +7,7 @@ def get_current_timestamp():
     return int(time.time())
 
 class Settings(models.Model):
-    pageIsManaged = models.BooleanField(default=False)
+    pageIsPaused = models.BooleanField(default=True)
     createNewCarPost = models.BooleanField(default=False)
     createNewCarStory = models.BooleanField(default=False)
     createSoldCarPost = models.BooleanField(default=False)
