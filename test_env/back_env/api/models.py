@@ -13,13 +13,9 @@ class Settings(models.Model):
     createSoldCarPost = models.BooleanField(default=False)
     createOldCarPost = models.BooleanField(default=False)
     createDiscountCarPost = models.BooleanField(default=False)
-    createSummaryPost = models.BooleanField(default=False)
-    createModifiedPost = models.BooleanField(default=False)
 
     oldCarPostDelay = models.PositiveIntegerField(default=4)
-    summaryPostDelay = models.PositiveIntegerField(default=4)
 
-    lastSummary = models.PositiveIntegerField(default=get_current_timestamp)
     lastNewCarPostEnabled = models.PositiveIntegerField(default=get_current_timestamp)
 
 class Dealer(models.Model):
@@ -74,7 +70,6 @@ class Ad(models.Model):
     date = models.PositiveBigIntegerField()
     isPublished = models.BooleanField()
     isSold = models.BooleanField()
-    isModified = models.BooleanField(default=False)
 
     fk_dealer = models.ForeignKey(Dealer, on_delete=models.CASCADE)
 

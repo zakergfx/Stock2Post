@@ -10,6 +10,9 @@ def formatDate(date):
     except:
         return date
 
+def convertPrice(price):
+    return int(re.sub(r"[^\d]", "", price))
+
 def isValidEmail(email):
     # Expression régulière pour valider une adresse email
     regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'

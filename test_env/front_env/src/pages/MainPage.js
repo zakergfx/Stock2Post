@@ -23,10 +23,6 @@ function MainPage() {
     const [oldCarHz, setOldCarHz] = useState()
 
     const [enablePostDiscount, setEnablePostDiscount] = useState()
-    const [enableModifiedPost, setEnableModifiedPost] = useState()
-
-    const [enablePostStockSummary, setEnablePostStockSummary] = useState()
-    const [summaryHz, setSummaryHz] = useState()
 
     const [dealerInfos, setDealerInfos] = useState()
 
@@ -99,16 +95,13 @@ function MainPage() {
             const data = (await Api.fetchGet(`/api/dealers/${infos.user}/`)).detail
             setDealerInfos(data)
 
-            setPausePageManagement(data.fk_settings.pageIsManaged)
+            setPausePageManagement(data.fk_settings.pageIsPaused)
             setEnablePostNewCar(data.fk_settings.createNewCarPost)
             setEnablePostNewCarStory(data.fk_settings.createNewCarStory)
             setEnablePostOldCar(data.fk_settings.createOldCarPost)
             setEnablePostSoldCar(data.fk_settings.createSoldCarPost)
             setEnablePostDiscount(data.fk_settings.createDiscountCarPost)
-            setEnableModifiedPost(data.fk_settings.createModifiedPost)
-            setEnablePostStockSummary(data.fk_settings.createSummaryPost)
             setOldCarHz(data.fk_settings.oldCarPostDelay)
-            setSummaryHz(data.fk_settings.summaryPostDelay)
 
         }
         fetchData()
@@ -125,10 +118,7 @@ function MainPage() {
             "createSoldCarPost": enablePostSoldCar,
             "createNewCarStory": enablePostNewCarStory,
             "createDiscountCarPost": enablePostDiscount,
-            "createModifiedPost": enableModifiedPost,
-            "createSummaryPost": enablePostStockSummary,
             "oldCarPostDelay": oldCarHz,
-            "summaryPostDelay": summaryHz
         }
 
         const response = await Api.fetchPatch(`/api/dealers/${dealerInfos.name}/settings/`, settings)
@@ -145,12 +135,6 @@ function MainPage() {
         const hz = parseInt(e.target.value)
         setOldCarHz(hz)
         setEnablePostOldCar(hz !== 0)
-    }
-
-    function handleSummaryHz(e) {
-        const hz = parseInt(e.target.value)
-        setSummaryHz(hz)
-        setEnablePostStockSummary(hz !== 0)
     }
 
     return (<div className="MainPage">
@@ -229,37 +213,6 @@ function MainPage() {
                         {testMode && <button id="2" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
 
-                       
-
-
-                        {/* <div className="Setting">
-                            <b>Créer un post quand une modification d’une annonce a lieu</b>
-                            <span>Si la page AutoScout d’un véhicule est modifiée, un nouveau post sera créé pour signaler que la page a été changée.</span>
-                        </div>
-                        <Toggle isActive={enableModifiedPost} setFct={setEnableModifiedPost} /> */}
-                        {/* {testMode && <button id="4" onClick={testingPost}>Tester</button>} */}
-                        {/* {testMode && isMobile && <span />} */}
-
-                        {/* <div className="Setting">
-                            <span className="SettingName">Créer un post récapitulatif du stock (Facebook uniquement) <ToolTip msg="Un post récapitulatif qui reprend l’ensemble de votre stock peut être planifié toutes les X semaines." /></span>
-                        </div>
-                        <select value={summaryHz} onChange={handleSummaryHz}>
-                            <option value="0">Jamais</option>
-                            <option value="1">1 semaine</option>
-                            <option value="2">2 semaines</option>
-                            <option value="3">3 semaines</option>
-                            <option value="4">4 semaines</option>
-                            <option value="5">5 semaines</option>
-                            <option value="6">6 semaines</option>
-                            <option value="7">7 semaines</option>
-                            <option value="8">8 semaines</option>
-                            <option value="9">9 semaines</option>
-                            <option value="10">10 semaines</option>
-                            <option value="11">11 semaines</option>
-                            <option value="12">12 semaines</option>
-                        </select>
-                        {testMode && <button id="5" onClick={testingPost}>Tester</button>}
-                        {testMode && isMobile && <span />} */}
 
                     </>}
                     <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value={!isMobile ? "Sauvegarder les changements" : "Sauvegarder"}></input>
