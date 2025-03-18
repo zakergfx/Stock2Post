@@ -11,7 +11,7 @@ def createImageContainer(dealer, imageUrl, message):
 def createCarouselContainer(dealer, imageUrls, message):
 
     if len(imageUrls) > 10:
-        imageUrls = imageUrl[:10]
+        imageUrls = imageUrls[:10]
 
     url = f"https://graph.instagram.com/v22.0/{dealer.igId}/media?access_token={dealer.igToken}"
     

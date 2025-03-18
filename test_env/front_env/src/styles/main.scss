@@ -34,6 +34,13 @@
                 gap: 2rem;
                 column-gap: 5rem;
 
+                .SettingName{
+                    font-weight: 400;
+                    display: flex;
+                    flex-direction: row;
+                    gap: 0.5rem;
+                }
+
                 &.Prod {
                     grid-template-columns: 50rem 10rem
                 }
@@ -51,22 +58,33 @@
                 }
 
                 Select {
-                    height: 3rem;
+                    height: 2rem;
                     border-radius: 0.25rem;
                 }
+
 
                 input[type="Submit"] {
                     font-size: 1.2rem;
                 }
 
                 button {
-                    height: 4rem;
+                    padding: 0;
+                    height: 2rem;
+                    width: 6rem;
                 }
             }
 
         }
 
+
+
     }
+}
+
+.Tip{
+    background-color: white;
+    padding: 1rem;
+    border-radius: 0.25rem;
 }
 
 @media (max-width: 1280px) {
@@ -76,7 +94,7 @@
 
             .Settings {
                 form {
-                    gap: 1rem;
+                    gap: 2rem;
 
 
                     &.Test, &.Prod {

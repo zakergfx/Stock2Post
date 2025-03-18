@@ -7,12 +7,12 @@ import { MainContext } from '../context/MainContext.js'
 
 import Alert from '../components/Alert.js'
 import Toggle from '../components/Toggle.js'
-
+import ToolTip from '../components/ToolTip.js'
 
 function MainPage() {
     const { isMobile } = useContext(MainContext)
 
-    const [enablePageManagemenent, setEnablePageManagement] = useState()
+    const [pausePageManagement, setPausePageManagement] = useState()
 
     const [enablePostNewCar, setEnablePostNewCar] = useState()
     const [enablePostNewCarStory, setEnablePostNewCarStory] = useState()
@@ -99,7 +99,7 @@ function MainPage() {
             const data = (await Api.fetchGet(`/api/dealers/${infos.user}/`)).detail
             setDealerInfos(data)
 
-            setEnablePageManagement(data.fk_settings.pageIsManaged)
+            setPausePageManagement(data.fk_settings.pageIsManaged)
             setEnablePostNewCar(data.fk_settings.createNewCarPost)
             setEnablePostNewCarStory(data.fk_settings.createNewCarStory)
             setEnablePostOldCar(data.fk_settings.createOldCarPost)
@@ -119,7 +119,7 @@ function MainPage() {
     async function handleButtonClick(e) {
         e.preventDefault()
         const settings = {
-            "pageIsManaged": enablePageManagemenent,
+            "pageIsPaused": pausePageManagement,
             "createNewCarPost": enablePostNewCar,
             "createOldCarPost": enablePostOldCar,
             "createSoldCarPost": enablePostSoldCar,
@@ -163,6 +163,7 @@ function MainPage() {
                     <Toggle isActive={testMode} setFct={setTestMode} />
                 </div>}
             </div>
+
             <div className="Settings">
                 <form className={testMode ? "Test" : "Prod"}>
                     <h2>Fonctionnalités</h2>
@@ -170,23 +171,21 @@ function MainPage() {
                     {testMode && !isMobile && <h2>Test</h2>}
 
                     <div className="Setting">
-                        <b>Activer la gestion de ma page</b>
-                        <span>Si cette option n'est pas activée alors aucun post ne sera publié sur votre page Facebook</span>
+                        <span className="SettingName">Mettre en pause TOUTES les publications <ToolTip msg="Si cette option est activée, aucun post ne sera publié sur vos réseaux." /></span>
                     </div>
 
-                    <Toggle isActive={enablePageManagemenent} setFct={setEnablePageManagement} />
+                    <Toggle isActive={pausePageManagement} setFct={setPausePageManagement} />
                     {!isMobile && testMode && <span></span>}
-                    {enablePageManagemenent && <>
+                    {!pausePageManagement && <>
                         <div className="Setting">
-                            <b>Créer un post quand un véhicule est ajouté à votre catalogue</b>
-                            <span>Quand un véhicule est ajouté à votre catalogue AutoScout, un post sera créé.</span>
+                            <span className="SettingName">Créer un post quand un véhicule est ajouté à votre catalogue <ToolTip msg="Chaque véhicule ajouté à votre stock AutoScout fera l'objet d'un nouveau post." /></span>
+                            <span></span>
                         </div>
                         <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
                         {testMode && <button id="0" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
                         <div className="Setting">
-                            <b>Créer une story quand un véhicule est ajouté à votre catalogue</b>
-                            <span>Quand un véhicule est ajouté à votre catalogue AutoScout, une story sera créée.</span>
+                            <span className="SettingName">Créer une story quand un véhicule est ajouté à votre catalogue <ToolTip msg="Chaque véhicule ajouté à votre stock AutoScout fera l'objet d'une nouvelle story." /></span>
                         </div>
 
                         <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
@@ -194,16 +193,21 @@ function MainPage() {
                         {testMode && isMobile && <span />}
 
                         <div className="Setting">
-                            <b>Créer un post quand un véhicule a été vendu</b>
-                            <span>Quand un véhicule est retiré de votre catalogue il sera considéré comme vendu. Un post sera créé pour signaler la vente.</span>
+                            <span className="SettingName">Créer un post quand un véhicule a été vendu <ToolTip msg="Quand un véhicule est retiré de votre catalogue il sera considéré comme vendu. Un post sera créé pour signaler la vente." /></span>
                         </div>
                         <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
                         {testMode && <button id="1" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
 
                         <div className="Setting">
-                            <b>Créer des posts de rappel</b>
-                            <span>Si un véhicule est présent depuis longtemps dans votre catalogue mais n’a toujours pas trouvé preneur, un post sera créé toutes les X semaines afin de remettre l’annonce en avant.</span>
+                            <span className="SettingName">Créer un post quand une réduction a lieu sur un véhicule <ToolTip msg="Lorsque le prix d’un véhicule est diminué, un post est réalisé pour le mettre en avant." /></span>
+                        </div>
+                        <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
+                        {testMode && <button id="3" onClick={testingPost}>Tester</button>}
+                        {testMode && isMobile && <span />}
+
+                        <div className="Setting">
+                            <span className="SettingName">Créer des posts de rappel <ToolTip msg="Si un véhicule est présent depuis longtemps dans votre catalogue mais n’a toujours pas trouvé preneur, un post sera créé toutes les X semaines afin de remettre l’annonce en avant." /></span>
                         </div>
 
                         <select value={oldCarHz} onChange={handleOldCarHz}>
@@ -225,26 +229,19 @@ function MainPage() {
                         {testMode && <button id="2" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
 
-                        <div className="Setting">
-                            <b>Créer un post quand une réduction a lieu sur un véhicule</b>
-                            <span>Lorsque le prix d’un véhicule est diminué, un post est réalisé pour le mettre en avant.</span>
-                        </div>
-                        <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
-                        {testMode && <button id="3" onClick={testingPost}>Tester</button>}
-                        {testMode && isMobile && <span />}
+                       
 
 
-                        <div className="Setting">
+                        {/* <div className="Setting">
                             <b>Créer un post quand une modification d’une annonce a lieu</b>
                             <span>Si la page AutoScout d’un véhicule est modifiée, un nouveau post sera créé pour signaler que la page a été changée.</span>
                         </div>
-                        <Toggle isActive={enableModifiedPost} setFct={setEnableModifiedPost} />
-                        {testMode && <button id="4" onClick={testingPost}>Tester</button>}
-                        {testMode && isMobile && <span />}
+                        <Toggle isActive={enableModifiedPost} setFct={setEnableModifiedPost} /> */}
+                        {/* {testMode && <button id="4" onClick={testingPost}>Tester</button>} */}
+                        {/* {testMode && isMobile && <span />} */}
 
-                        <div className="Setting">
-                            <b>Créer un post récapitulatif du stock (Facebook uniquement)</b>
-                            <span>Un post récapitulatif qui reprend l’ensemble de votre stock peut être planifié toutes les X semaines.</span>
+                        {/* <div className="Setting">
+                            <span className="SettingName">Créer un post récapitulatif du stock (Facebook uniquement) <ToolTip msg="Un post récapitulatif qui reprend l’ensemble de votre stock peut être planifié toutes les X semaines." /></span>
                         </div>
                         <select value={summaryHz} onChange={handleSummaryHz}>
                             <option value="0">Jamais</option>
@@ -262,7 +259,7 @@ function MainPage() {
                             <option value="12">12 semaines</option>
                         </select>
                         {testMode && <button id="5" onClick={testingPost}>Tester</button>}
-                        {testMode && isMobile && <span />}
+                        {testMode && isMobile && <span />} */}
 
                     </>}
                     <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value={!isMobile ? "Sauvegarder les changements" : "Sauvegarder"}></input>

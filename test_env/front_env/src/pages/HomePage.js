@@ -44,8 +44,8 @@ function HomePage() {
 
     return (<div className="HomePage" id="home">
         <div className="Content">
-            <h1>Gagnez en visibilité sur les réseaux sociaux sans effort</h1>
-            <p className="Subtitle">Synchronisez automatiquement votre stock <span className="AS">AutoScout24</span> avec votre page <span className="FB">Facebook</span> et <span className="IG">Instagram (bientôt disponible)</span></p>
+            <h1>Vendez vos véhicules sur les réseaux sociaux sans effort</h1>
+            <p className="Subtitle">Synchronisez automatiquement votre stock <span className="AS">AutoScout24</span> avec votre page <span className="FB">Facebook</span> et <span className="IG">Instagram</span></p>
             {!isMobile ? <div className="Visuals">
                 <img id="iphone" src={Var.backendUrl + "/api/media/iphone.png"} />
                 <div className="MacAndCta">
@@ -141,15 +141,17 @@ function HomePage() {
                 <br /><span>Ou bien via ce formulaire</span><br />
                 <form onSubmit={handleSubmit}>
                     <label required for="name">Nom <span className="Mandatory">*</span></label>
-                    <label required for="surname">Prénom <span className="Mandatory">*</span></label>
+                    <span/>
+                    {/* <label required for="surname">Prénom <span className="Mandatory">*</span></label> */}
                     <input required onChange={handleChange} value={formData.name} type="text" id="name"></input>
-                    <input required onChange={handleChange} value={formData.surname} type="text" id="surname"></input>
+                    <span/>
+                    {/* <input required onChange={handleChange} value={formData.surname} type="text" id="surname"></input> */}
                     <label required for="phone">N° de téléphone <span className="Mandatory">*</span></label>
                     <label required for="mail">Adresse mail <span className="Mandatory">*</span></label>
                     <input required onChange={handleChange} value={formData.phone} type="number" id="phone"></input>
                     <input required onChange={handleChange} value={formData.mail} type="text" id="mail"></input>
-                    <label required className="Wide" for="company">Nom de votre entreprise <span className="Mandatory">*</span></label>
-                    <input required onChange={handleChange} value={formData.company} className="Wide" type="text" id="company"></input>
+                    {/* <label required className="Wide" for="company">Nom de votre entreprise <span className="Mandatory">*</span></label> */}
+                    {/* <input required onChange={handleChange} value={formData.company} className="Wide" type="text" id="company"></input> */}
                     <label required className="Wide" for="message">Message <span className="Mandatory">*</span></label>
                     <textarea rows="10" onChange={handleChange} value={formData.message} className="Wide" id="message"></textarea>
                     <button type="submit" className="Primary">Envoyer</button>
@@ -163,14 +165,11 @@ function HomePage() {
                         <p>Possibilité de choisir quel jour et à quelle heure sont faites les publication.</p>
                         <p>L’objectif est de maximiser la visibilité des posts en vous permettant de publier aux heures de pics d’utilisation des réseaux sociaux.</p>
                     </FeatureCard>
-                    <FeatureCard title="Page de statistiques">
+                    {/* <FeatureCard title="Page de statistiques">
                         <p>Page qui reprend le nombre de posts qu’AutoShare a fait pour vous.</p>
                         <p>
                             L’objectif est que vous puissiez facilement vous rendre compte si oui ou non l’application vous fait gagner en temps et visibilité.</p>
-                    </FeatureCard>
-                    <FeatureCard title="Intégration d’Instagram">
-                        <p>L’outil sera capable de publier des posts et Story (Reels) sur instagram. Pour ce faire il vous suffira de lier votre compte Instagram via l’onglet de Connexion.</p>
-                    </FeatureCard>
+                    </FeatureCard> */}
                     <FeatureCard title="Mise en avant des avis">
                         <p>Les avis positifs des utilisateurs laissés sur AutoScout pourront être automatiquement publiés sur votre page Facebook.</p>
                     </FeatureCard>

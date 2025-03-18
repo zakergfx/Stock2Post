@@ -50,7 +50,7 @@ function ProfilPage() {
         return (<div className="ProfilPage">
             <div className="Content">
 
-                <h1>Liaisons à vos réseaux sociaux</h1>
+                <h1>Configurez votre profil</h1>
 
                 <h2>Lier votre page Facebook</h2>
                 {!me.fbPageName ? <>

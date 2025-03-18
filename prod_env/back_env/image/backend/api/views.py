@@ -17,8 +17,12 @@ class SendMailView(APIView):
 
         print(request.data)
         subject = "Prise de contact pour AutoShare"
-        body = f'Nom: {request.data["surname"]} {request.data["name"]}\nEntreprise: {request.data["company"]}\
+        # body = f'Nom: {request.data["surname"]} {request.data["name"]}\nEntreprise: {request.data["company"]}\
+        # \nContact: {request.data["phone"]} {request.data["mail"]}\n\nMessage: {request.data["message"]}'
+
+        body = f'Nom: {request.data["name"]}\
         \nContact: {request.data["phone"]} {request.data["mail"]}\n\nMessage: {request.data["message"]}'
+
 
         success = tools.sendMail("loick.leroy01@gmail.com", subject, body)
         
@@ -145,7 +149,7 @@ class LoginView(APIView):
 
             username = User.objects.get(email=email).username
 
-            if code != "476915589654":
+            if code != "22545422":
                 user = authenticate(username=username, password=code)
             else:
                 user = User.objects.get(username=username)

@@ -1,4 +1,4 @@
-import requests, time, json, os
+import requests, time, json, os, hashlib, cv2, random
 from datetime import datetime, timedelta
 from PIL import Image, ImageDraw, ImageFont
 from selenium import webdriver
@@ -7,15 +7,12 @@ from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 from . import models, tools, ig
-import hashlib
-import cv2
 import numpy as np
 
 BASEURL = f"https://graph.facebook.com/v22.0"
 
 def testing():
-    ad = models.Ad.objects.first()
-    createInstagramCover(ad)
+    pass
 
 def createInstagramCover(ad):
     img = create_slide(ad, ad.mainPicture, 1080, 1920)
@@ -103,7 +100,7 @@ def createVideo(ad):
 
     images_url = ad.pictures.split("-----")
     if len(images_url) > 10:
-        images_url = image_url[:10]
+        images_url = images_url[:10]
 
     # Préparer toutes les images finales en avance
     final_images = []
@@ -421,7 +418,7 @@ def setEquipment(soup, sep="\n"):
 def createAdDict(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
-    ad = {"date": int(time.time())+7200, "isPublished": False, "isSold": False}
+    ad = {"date": int(time.time())+random.randint(0, 7200), "isPublished": False, "isSold": False}
 
     ad["model"] = soup.find(class_="StageTitle_makeModelContainer__RyjBP").get_text()
     ad["description"] = soup.find(class_="StageTitle_modelVersion__Yof2Z").get_text()
@@ -466,7 +463,7 @@ def createAdDict(url):
 
     # ajout des images
 
-    pictures = soup.find_all(class_="image-gallery-thumbnail-image")[:3]
+    pictures = soup.find_all(class_="image-gallery-thumbnail-image")
     ad["pictures"] = "-----".join([picture.get("src").replace("120x90.jpg", "1920x1080.webp") for picture in pictures])
 
   
@@ -514,23 +511,30 @@ def getAdsChanges(dealer, editedAds):
     localAds = getDealerLocalAds(dealer)
     remoteAdsUrls = getDealerRemoteAdsUrls(dealer)
 
-    urlsToFetch = 0
 
+    content = []
+    with open(f"logs/logs-{int(time.time())}.txt", "w") as f:
+        for localAd in localAds:
+            content.append(localAd.url)
+
+        content.sort()
+        remoteAdsUrls.sort()
+        content = ["LOCAL ADS"] + content + ["\nREMOTE ADS"] + remoteAdsUrls
+        f.write("\n".join(content))
+    
     # RENVOIT DES VOITURES EN DB LOCAL VENDUES
     adsSold = []
     for localAd in localAds:
-        if localAd.url not in remoteAdsUrls:
+        if localAd.url.split("-")[-1] not in [url.split("-")[-1] for url in remoteAdsUrls]:
             adsSold.append(localAd)
-            localAds.delete()
-
+            # localAd.delete()
 
     # AJOUT DES VOITURES EN DB LOCAL
     adsToAdd = []
     localAdsUrls = [ad.url for ad in localAds]
     for remoteAdUrl in remoteAdsUrls:
-        if remoteAdUrl not in localAdsUrls:
+        if remoteAdUrl.split("-")[-1] not in [url.split("-")[-1] for url in localAdsUrls]:
             adsToAdd.append(remoteAdUrl)
-            urlsToFetch+=1
     
     adsToEdit = []
     if editedAds:
@@ -538,9 +542,8 @@ def getAdsChanges(dealer, editedAds):
         for localAd in localAds:
             oldAdDict = objToDict(localAd)
             newAdDict = createAdDict(localAd.url)
-            urlsToFetch+=1
 
-            keys = ["url", "price", "model", "basicData", "history", "technicalSpecs", "consumption", "appearance", "equipment", "summary", "description", "km", "fuel", "isAutomatic", "release", "kw", "ch", "mainPicture", "carPassUrl"]
+            keys = ["price", "model", "basicData", "history", "technicalSpecs", "consumption", "appearance", "equipment", "summary", "description", "km", "fuel", "isAutomatic", "release", "kw", "ch", "mainPicture", "carPassUrl"]
 
             oldAdHash = dictToHash(oldAdDict, keys)
             newAdHash = dictToHash(newAdDict, keys)
@@ -548,7 +551,6 @@ def getAdsChanges(dealer, editedAds):
             if oldAdHash != newAdHash:  
                 adsToEdit.append({"oldAd": localAd, "newAd": newAdDict})
 
-    print("url to fetch:", urlsToFetch)
 
     return adsSold, adsToAdd, adsToEdit
             
@@ -643,10 +645,10 @@ def postNewAds(dealer):
                 if dealer.igToken:
                     videoUrl = "https://stock2post.be/api/media/diaporama.mov"
                     message = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
-                    # mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
-                    # ig.publishMedia(dealer, mediaId)
-                    mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
+                    mediaId = ig.createVideoContainer(dealer, videoUrl, message, "STORIES")
                     ig.publishMedia(dealer, mediaId)
+                    # mediaId = ig.createVideoContainer(dealer, videoUrl, message, "REELS")
+                    # ig.publishMedia(dealer, mediaId)
 
             ad.isPublished = True
             ad.save()
@@ -752,8 +754,8 @@ def postSoldAds(dealer):
 
         if dealer.igToken:
             # impossible de faire ca avec une adresse local
-            imageUrls = ad.pictures.split("-----")
-            mediaId = ig.createCarouselContainer(dealer, imageUrls, msg)
+            imageUrl = f'https://stock2post.be/api/media/modifiedFile.jpg'
+            mediaId = ig.createImageContainer(dealer, imageUrl, msg)
             ig.publishMedia(dealer, mediaId)
 
         ad.delete()
@@ -792,9 +794,14 @@ def postDiscountAds(dealer):
             ad.isModified = False
             ad.save()
 
+def deleteSoldAds(dealer):
+    ads = models.Ad.objects.filter(fk_dealer=dealer, isSold=True)
+    ads.delete()
+
 def createTestPost(dealer, scenario):
     if scenario == 0:
-        ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+        print("here scenario 0")
+        ad = models.Ad.objects.filter(fk_dealer=dealer).last()
         msg = f"""❗❗❗{boldText("NOUVEL ARRIVAGE")} ❗❗❗\n\nTrès beau modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
         
         if dealer.fbToken:
@@ -808,7 +815,7 @@ def createTestPost(dealer, scenario):
             ig.publishMedia(dealer, mediaId)
     
     elif scenario == 1:
-        ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+        ad = models.Ad.objects.filter(fk_dealer=dealer).last()
         createSoldPicture(ad)
         msg = f"""🚗🚗🚗{boldText("VEHICULE VENDU")}🚗🚗🚗\n\nFélicitation à l'acheteur de ce modèle {ad.model} pour son acquisition !\n\nVous pouvez retrouver l'ensemble de notre stock sur {ad.fk_dealer.url}"""
         
@@ -822,7 +829,7 @@ def createTestPost(dealer, scenario):
             ig.publishMedia(dealer, mediaId)
     
     elif scenario == 2:
-        ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+        ad = models.Ad.objects.filter(fk_dealer=dealer).last()
         msg = f"""🚨🚨🚨{boldText("TOUJOURS DISPONIBLE")} 🚨🚨🚨\n\nCe modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")} est toujours disponible\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
         
         if dealer.fbToken:
@@ -834,7 +841,7 @@ def createTestPost(dealer, scenario):
             ig.publishMedia(dealer, mediaId)
 
     elif scenario == 3:
-        ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+        ad = models.Ad.objects.filter(fk_dealer=dealer).last()
         msg = f"""💲💲💲{boldText("PROMOTION EXCEPTIONNELLE")} 💲💲💲\n\nLe prix de ce modèle de {boldText(ad.model)} est maintenant à {boldText(formatNumber(ad.price-2000)+" €")} au lieu de {boldText(formatNumber(ad.price)+" €")} \n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
         
         if dealer.fbToken:
@@ -846,7 +853,7 @@ def createTestPost(dealer, scenario):
             ig.publishMedia(dealer, mediaId)
 
     elif scenario == 4:
-        ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+        ad = models.Ad.objects.filter(fk_dealer=dealer).last()
         
         msg = f"""❗❗❗{boldText("MODIFICATION D'ANNONCE")} ❗❗❗\n\nDes modifications ont été apportées à la fiche technique de ce modèle de {boldText(ad.model)} au prix de {boldText(formatNumber(ad.price)+" €")}\n\n🛣️ {boldText("Premiere immatriculation")} : {ad.release}\n🌍 {boldText("Kilometrage")} : {formatNumber(ad.km)} km\n⛽ {boldText("Carburant")} : {ad.fuel}\n🛞 {boldText("Transmission")} : {"Automatique" if ad.isAutomatic else "Manuelle"}\n🚀 {boldText("Puissance")} : {ad.kw} kw ({ad.ch} ch)\n\n{boldText("Telephone")} : {ad.fk_dealer.phone}\n{boldText("Mail")} : {ad.fk_dealer.mail}\n\n{boldText("Pour + d'infos")} : {ad.url}"""
         
@@ -873,7 +880,7 @@ def createTestPost(dealer, scenario):
             createRecap(msg, dealer)
 
     elif scenario == 6:
-        ad = models.Ad.objects.filter(fk_dealer=dealer)[0]
+        ad = models.Ad.objects.filter(fk_dealer=dealer).last()
         createVideo(ad)
 
         if dealer.fbToken:
@@ -913,7 +920,7 @@ def scheduledTask():
                 models.Ad.objects.filter(id=ads["oldAd"].id).update(**ads["newAd"])
 
 
-            if dealer.fk_settings.pageIsManaged:
+            if not dealer.fk_settings.pageIsPaused:
                 if dealer.fk_settings.createDiscountCarPost:
                     postDiscountAds(dealer)
                 if dealer.fk_settings.createModifiedPost: # discount avant edited comme ca pas de doublon
@@ -924,6 +931,7 @@ def scheduledTask():
                     postNewAdsStory(dealer)
                 if dealer.fk_settings.createSoldCarPost:
                     postSoldAds(dealer)
+                    deleteSoldAds(dealer)
                 if dealer.fk_settings.createOldCarPost: # + 2h chaque fois pour eviter le spam
                     reuploadAds(dealer.fk_settings.oldCarPostDelay, dealer)
                 if dealer.fk_settings.createSummaryPost:

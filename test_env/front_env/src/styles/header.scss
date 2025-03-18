@@ -1,100 +1,105 @@
 @import "common.scss";
 
-
 .Header {
-
     position: fixed;
     z-index: 1001;
-    height: 3rem;
-
-    margin-top: 1rem;
-
+    background-color: $headerColor;
+    width: 100vw;
     display: flex;
     flex-direction: row;
-    align-items: center;
+    justify-content: center;
 
-    background-color: $headerColor;
-
-    border-radius: 0.25rem;
-
-    gap: 5rem;
-
-    padding: 1rem;
-
-    .Colored{
-        color: $firstColor;
-    }
-
-    a {
-        color: white;
-        text-decoration: none;
-
-        &.Log {
-            color: black;
-            background-color: $firstColor;
-            padding: 0.25rem 2rem;
-
-            border-radius: 0.25rem;
-
-        }
-    }
-}
-
-@media (max-width: 1280px) {
-
-    .Header {
-        height: auto;
+    .SubHeader {
+        height: 3rem;
         display: flex;
-        flex-direction: column;
-        margin: 0;
-        padding: 0;
+        flex-direction: row;
+        align-items: center;
 
-        background-color: transparent;
-        width: 100%;
 
-        .ButtonDiv {
-            background-color: $bgColor;
-            width: 100%;
-            height: 5rem;
-            img {
-                cursor: pointer;
-                z-index: 1001;
-                position: fixed;
-                right: 2rem;
-                top: 1rem;
+        background-color: $headerColor;
 
-                width: 3rem;
+        // border-radius: 0.25rem;
+
+        gap: 5rem;
+
+        padding: 1rem;
+
+        .Colored {
+            color: $firstColor;
+        }
+
+        a {
+            color: white;
+            text-decoration: none;
+
+            &.Log {
+                color: black;
+                background-color: $firstColor;
+                padding: 0.25rem 2rem;
+
+                border-radius: 0.25rem;
+
             }
         }
+    }
 
+    @media (max-width: 1280px) {
 
-
-        .Content {
-            background-color: $bgColor;
-            position: absolute;
-            top: 5rem;
+        .SubHeader {
+            height: auto;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            padding-top: 10rem;
-            width: 100vw;
-            height: 100vh;
-            transition: left 0.2s ease-in-out;
+            margin: 0;
+            padding: 0;
+
+            background-color: transparent;
+            width: 100%;
 
 
-            font-size: 2.5rem;
-            gap: 2rem;
+            .ButtonDiv {
+                background-color: $bgColor;
+                width: 100%;
+                height: 5rem;
 
+                img {
+                    cursor: pointer;
+                    z-index: 1001;
+                    position: fixed;
+                    right: 2rem;
+                    top: 1rem;
 
-            &.Hidden {
-                left: 100%;
+                    width: 3rem;
+                }
             }
 
-            &.Shown {
-                left: 0%;
 
+            .Content {
+                background-color: $bgColor;
+                position: absolute;
+                top: 5rem;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding-top: 10rem;
+                width: 100vw;
+                height: 100vh;
+                transition: left 0.2s ease-in-out;
+
+
+                font-size: 2.5rem;
+                gap: 2rem;
+
+
+                &.Hidden {
+                    left: 100%;
+                }
+
+                &.Shown {
+                    left: 0%;
+
+                }
             }
         }
-    }
 
+    }
 }
