@@ -42,11 +42,11 @@
                 }
 
                 &.Prod {
-                    grid-template-columns: 50rem 10rem
+                    grid-template-columns: 50rem 10rem 10rem;
                 }
 
                 &.Test {
-                    grid-template-columns: 50rem 10rem 10rem;
+                    grid-template-columns: 50rem 10rem 10rem 10rem;
 
                 }
 

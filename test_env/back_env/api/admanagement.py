@@ -498,41 +498,40 @@ def getDealerRemoteAdsUrls(dealer):
     response = requests.get(url)
     soup = BeautifulSoup(response.text, "html.parser")
 
-    ads = []
-    pagesRemaining = True
+    tries = []
 
-    index = 1
-    while pagesRemaining:
-        url = baseUrl + "?page={}".format(index)
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, "html.parser")
-        pageAds = soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
-        index+=1
-        if len(pageAds) > 0:
-            ads += pageAds
-        else:
-            pagesRemaining= False
+    for _ in range(3):
+        ads = []
+        pagesRemaining = True
 
-    adsUrls = []
-    for ad in ads:
-        adsUrls.append("https://autoscout24.be"+ad.get("href"))
-    
-    print("urls remote : "+str(len(adsUrls)))
-    return adsUrls
+        index = 1
+        while pagesRemaining:
+            url = baseUrl + "?page={}".format(index)
+            response = requests.get(url)
+            soup = BeautifulSoup(response.text, "html.parser")
+            pageAds = soup.find_all(class_="dp-link dp-listing-item-title-wrapper")
+            index+=1
+            if len(pageAds) > 0:
+                ads += pageAds
+            else:
+                pagesRemaining= False
+
+        adsUrls = []
+        for ad in ads:
+            adsUrls.append("https://autoscout24.be"+ad.get("href"))
+        
+        print("urls remote : "+str(len(adsUrls)))
+        tries.append({"length": len(adsUrls), "urls": adsUrls})
+
+    triesLengths = [tri["length"] for tri in tries]
+
+    i = triesLengths.index(max(triesLengths))
+
+    return tries[i]["urls"]
 
 def getAdsChanges(dealer):
     localAds = getDealerLocalAds(dealer)
     remoteAdsUrls = getDealerRemoteAdsUrls(dealer)
-
-    content = []
-    with open(f"logs/logs-{int(time.time())}.txt", "w") as f:
-        for localAd in localAds:
-            content.append(localAd.url)
-
-        content.sort()
-        remoteAdsUrls.sort()
-        content = ["LOCAL ADS"] + content + ["\nREMOTE ADS"] + remoteAdsUrls
-        f.write("\n".join(content))
     
     # RENVOIT DES VOITURES EN DB LOCAL VENDUES
     adsSold = []
@@ -785,7 +784,7 @@ def updateAllPrices(dealer):
         adsDict[ad.find(class_="dp-link dp-listing-item-title-wrapper").get("href").split("-")[-1]] = tools.convertPrice(price.get_text())
 
 
-    ads = models.Ad.objects.filter(fk_dealer=dealer)
+    ads = models.Ad.objects.filter(fk_dealer=dealer, isSold=False)
     
     for ad in ads:
         ad.lastPrice = ad.price
