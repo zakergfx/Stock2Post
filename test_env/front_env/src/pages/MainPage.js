@@ -151,7 +151,8 @@ function MainPage() {
             <div className="Settings">
                 <form className={testMode ? "Test" : "Prod"}>
                     <h2>Fonctionnalités</h2>
-                    <h2>Activé</h2>
+                    <h2>Facebook</h2>
+                    <h2>Instagram</h2>
                     {testMode && !isMobile && <h2>Test</h2>}
 
                     <div className="Setting">
@@ -159,6 +160,8 @@ function MainPage() {
                     </div>
 
                     <Toggle isActive={pausePageManagement} setFct={setPausePageManagement} />
+                    <Toggle isActive={pausePageManagement} setFct={setPausePageManagement} />
+                    
                     {!isMobile && testMode && <span></span>}
                     {!pausePageManagement && <>
                         <div className="Setting">
@@ -166,6 +169,8 @@ function MainPage() {
                             <span></span>
                         </div>
                         <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
+                        <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
+
                         {testMode && <button id="0" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
                         <div className="Setting">
@@ -173,6 +178,8 @@ function MainPage() {
                         </div>
 
                         <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
+                        <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
+
                         {testMode && <button id="6" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
 
@@ -180,6 +187,8 @@ function MainPage() {
                             <span className="SettingName">Créer un post quand un véhicule a été vendu <ToolTip msg="Quand un véhicule est retiré de votre catalogue il sera considéré comme vendu. Un post sera créé pour signaler la vente." /></span>
                         </div>
                         <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
+                        <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
+
                         {testMode && <button id="1" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
 
@@ -187,6 +196,8 @@ function MainPage() {
                             <span className="SettingName">Créer un post quand une réduction a lieu sur un véhicule <ToolTip msg="Lorsque le prix d’un véhicule est diminué, un post est réalisé pour le mettre en avant." /></span>
                         </div>
                         <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
+                        <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
+
                         {testMode && <button id="3" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
 
@@ -209,6 +220,23 @@ function MainPage() {
                             <option value="11">11 semaines</option>
                             <option value="12">12 semaines</option>
                         </select>
+
+                        <select value={oldCarHz} onChange={handleOldCarHz}>
+                            <option value="0">Jamais</option>
+                            <option value="1">1 semaine</option>
+                            <option value="2">2 semaines</option>
+                            <option value="3">3 semaines</option>
+                            <option value="4">4 semaines</option>
+                            <option value="5">5 semaines</option>
+                            <option value="6">6 semaines</option>
+                            <option value="7">7 semaines</option>
+                            <option value="8">8 semaines</option>
+                            <option value="9">9 semaines</option>
+                            <option value="10">10 semaines</option>
+                            <option value="11">11 semaines</option>
+                            <option value="12">12 semaines</option>
+                        </select>
+
 
                         {testMode && <button id="2" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
