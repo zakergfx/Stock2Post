@@ -7,16 +7,23 @@ def get_current_timestamp():
     return int(time.time())
 
 class Settings(models.Model):
-    pageIsPaused = models.BooleanField(default=True)
-    createNewCarPost = models.BooleanField(default=False)
-    createNewCarStory = models.BooleanField(default=False)
-    createSoldCarPost = models.BooleanField(default=False)
-    createOldCarPost = models.BooleanField(default=False)
-    createDiscountCarPost = models.BooleanField(default=False)
+    FBpageIsPaused = models.BooleanField(default=True)
+    FBcreateNewCarPost = models.BooleanField(default=False)
+    FBcreateNewCarStory = models.BooleanField(default=False)
+    FBcreateSoldCarPost = models.BooleanField(default=False)
+    FBcreateOldCarPost = models.BooleanField(default=False)
+    FBcreateDiscountCarPost = models.BooleanField(default=False)
+    FBoldCarPostDelay = models.PositiveIntegerField(default=4)
+    FBlastNewCarPostEnabled = models.PositiveIntegerField(default=get_current_timestamp)
 
-    oldCarPostDelay = models.PositiveIntegerField(default=4)
-
-    lastNewCarPostEnabled = models.PositiveIntegerField(default=get_current_timestamp)
+    IGpageIsPaused = models.BooleanField(default=True)
+    IGcreateNewCarPost = models.BooleanField(default=False)
+    IGcreateNewCarStory = models.BooleanField(default=False)
+    IGcreateSoldCarPost = models.BooleanField(default=False)
+    IGcreateOldCarPost = models.BooleanField(default=False)
+    IGcreateDiscountCarPost = models.BooleanField(default=False)
+    IGoldCarPostDelay = models.PositiveIntegerField(default=0)
+    IGlastNewCarPostEnabled = models.PositiveIntegerField(default=get_current_timestamp)
 
 class Dealer(models.Model):
     name = models.CharField(max_length=500)
