@@ -11,7 +11,7 @@ services:
     volumes:
       - "./persistentData/db.sqlite3:/backend/db.sqlite3"
     command: >
-      bash -c "source venv/bin/activate && (celery -A autoscoutapi beat -l info & celery -A autoscoutapi worker -l info & python3 manage.py makemigrations && python3 manage.py migrate && /usr/sbin/apache2ctl -D FOREGROUND)"
+      bash -c "source venv/bin/activate && (celery -A autoscoutapi beat -l info & celery -A autoscoutapi worker -l info & python3 manage.py makemigrations --noinput && python3 manage.py migrate && /usr/sbin/apache2ctl -D FOREGROUND)"
 
   rabbit:
     container_name: as_rabbitmq

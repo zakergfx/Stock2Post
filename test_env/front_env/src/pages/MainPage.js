@@ -12,34 +12,33 @@ import ToolTip from '../components/ToolTip.js'
 function MainPage() {
     const { isMobile } = useContext(MainContext)
 
-    const [pausePageManagement, setPausePageManagement] = useState()
+    const [FBpageIsPaused, setFBpageIsPaused] = useState()
+    const [FBcreateNewCarPost, setFBcreateNewCarPost] = useState()
+    const [FBcreateNewCarStory, setFBcreateNewCarStory] = useState()
+    const [FBcreateSoldCarPost, setFBcreateSoldCarPost] = useState()
+    const [FBcreateOldCarPost, setFBcreateOldCarPost] = useState()
+    const [FBcreateDiscountCarPost, setFBcreateDiscountCarPost] = useState()
+    const [FBoldCarPostDelay, setFBoldCarPostDelay] = useState()
+    const [FBlastNewCarPostEnabled, setFBlastNewCarPostEnabled] = useState()
 
-    const [enablePostNewCar, setEnablePostNewCar] = useState()
-    const [enablePostNewCarStory, setEnablePostNewCarStory] = useState()
+    const [IGpageIsPaused, setIGpageIsPaused] = useState()
+    const [IGcreateNewCarPost, setIGcreateNewCarPost] = useState()
+    const [IGcreateNewCarStory, setIGcreateNewCarStory] = useState()
+    const [IGcreateSoldCarPost, setIGcreateSoldCarPost] = useState()
+    const [IGcreateOldCarPost, setIGcreateOldCarPost] = useState()
+    const [IGcreateDiscountCarPost, setIGcreateDiscountCarPost] = useState()
+    const [IGoldCarPostDelay, setIGoldCarPostDelay] = useState()
+    const [IGlastNewCarPostEnabled, setIGlastNewCarPostEnabled] = useState()
 
-    const [enablePostSoldCar, setEnablePostSoldCar] = useState()
-
-    const [enablePostOldCar, setEnablePostOldCar] = useState()
-    const [oldCarHz, setOldCarHz] = useState()
-
-    const [enablePostDiscount, setEnablePostDiscount] = useState()
 
     const [dealerInfos, setDealerInfos] = useState()
-
     const [testMode, setTestMode] = useState(false)
 
     async function getRequestStatus() {
         const response = await Api.fetchGet("/api/requeststatus")
-        // console.log(response.detail.status)
-
         return response.detail.status
     }
 
-    // useEffect(() => {
-    //     getRequestStatus()
-    //     setInterval(getRequestStatus, 5000)
-
-    // }, [])
 
     function promise() {
 
@@ -95,31 +94,53 @@ function MainPage() {
             const data = (await Api.fetchGet(`/api/dealers/${infos.user}/`)).detail
             setDealerInfos(data)
 
-            setPausePageManagement(data.fk_settings.pageIsPaused)
-            setEnablePostNewCar(data.fk_settings.createNewCarPost)
-            setEnablePostNewCarStory(data.fk_settings.createNewCarStory)
-            setEnablePostOldCar(data.fk_settings.createOldCarPost)
-            setEnablePostSoldCar(data.fk_settings.createSoldCarPost)
-            setEnablePostDiscount(data.fk_settings.createDiscountCarPost)
-            setOldCarHz(data.fk_settings.oldCarPostDelay)
+            console.log(data.fk_settings)
+
+            setFBpageIsPaused(data.fk_settings.FBpageIsPaused)
+            setFBcreateNewCarPost(data.fk_settings.FBcreateNewCarPost)
+            setFBcreateNewCarStory(data.fk_settings.FBcreateNewCarStory)
+            setFBcreateSoldCarPost(data.fk_settings.FBcreateSoldCarPost)
+            setFBcreateOldCarPost(data.fk_settings.FBcreateOldCarPost)
+            setFBcreateDiscountCarPost(data.fk_settings.FBcreateDiscountCarPost)
+            setFBoldCarPostDelay(data.fk_settings.FBoldCarPostDelay)
+            setFBlastNewCarPostEnabled(data.fk_settings.FBlastNewCarPostEnabled)
+
+            setIGpageIsPaused(data.fk_settings.IGpageIsPaused)
+            setIGcreateNewCarPost(data.fk_settings.IGcreateNewCarPost)
+            setIGcreateNewCarStory(data.fk_settings.IGcreateNewCarStory)
+            setIGcreateSoldCarPost(data.fk_settings.IGcreateSoldCarPost)
+            setIGcreateOldCarPost(data.fk_settings.IGcreateOldCarPost)
+            setIGcreateDiscountCarPost(data.fk_settings.IGcreateDiscountCarPost)
+            setIGoldCarPostDelay(data.fk_settings.IGoldCarPostDelay)
+            setIGlastNewCarPostEnabled(data.fk_settings.IGlastNewCarPostEnabled)
 
         }
         fetchData()
-
 
     }, [])
 
     async function handleButtonClick(e) {
         e.preventDefault()
         const settings = {
-            "pageIsPaused": pausePageManagement,
-            "createNewCarPost": enablePostNewCar,
-            "createOldCarPost": enablePostOldCar,
-            "createSoldCarPost": enablePostSoldCar,
-            "createNewCarStory": enablePostNewCarStory,
-            "createDiscountCarPost": enablePostDiscount,
-            "oldCarPostDelay": oldCarHz,
+
+            "FBpageIsPaused": FBpageIsPaused,
+            "FBcreateNewCarPost": FBcreateNewCarPost,
+            "FBcreateNewCarStory": FBcreateNewCarStory,
+            "FBcreateSoldCarPost": FBcreateSoldCarPost,
+            "FBcreateOldCarPost": FBcreateOldCarPost,
+            "FBcreateDiscountCarPost": FBcreateDiscountCarPost,
+            "FBoldCarPostDelay": FBoldCarPostDelay,
+            "FBlastNewCarPostEnabled": FBlastNewCarPostEnabled,
+            "IGpageIsPaused": IGpageIsPaused,
+            "IGcreateNewCarPost": IGcreateNewCarPost,
+            "IGcreateNewCarStory": IGcreateNewCarStory,
+            "IGcreateSoldCarPost": IGcreateSoldCarPost,
+            "IGcreateOldCarPost": IGcreateOldCarPost,
+            "IGcreateDiscountCarPost": IGcreateDiscountCarPost,
+            "IGoldCarPostDelay": IGoldCarPostDelay,
+            "IGlastNewCarPostEnabled": IGlastNewCarPostEnabled
         }
+
 
         const response = await Api.fetchPatch(`/api/dealers/${dealerInfos.name}/settings/`, settings)
         if (response.success) {
@@ -131,10 +152,17 @@ function MainPage() {
 
     }
 
-    function handleOldCarHz(e) {
+    function FBhandleOldCarHz(e) {
         const hz = parseInt(e.target.value)
-        setOldCarHz(hz)
-        setEnablePostOldCar(hz !== 0)
+        setFBoldCarPostDelay(hz)
+        setFBcreateOldCarPost(hz !== 0)
+
+    }
+
+    function IGhandleOldCarHz(e) {
+        const hz = parseInt(e.target.value)
+        setIGoldCarPostDelay(hz)
+        setIGcreateOldCarPost(hz !== 0)
     }
 
     return (<div className="MainPage">
@@ -155,30 +183,28 @@ function MainPage() {
                     <h2>Instagram</h2>
                     {testMode && !isMobile && <h2>Test</h2>}
 
-                    <div className="Setting">
-                        <span className="SettingName">Mettre en pause TOUTES les publications <ToolTip msg="Si cette option est activée, aucun post ne sera publié sur vos réseaux." /></span>
+                    <div className="Setting First">
+                        <span className="SettingName First">Mettre en PAUSE les publications <ToolTip msg="Si cette option est activée, aucun post ne sera publié sur vos réseaux." /></span>
                     </div>
 
-                    <Toggle isActive={pausePageManagement} setFct={setPausePageManagement} />
-                    <Toggle isActive={pausePageManagement} setFct={setPausePageManagement} />
-                    
+                    <Toggle isActive={FBpageIsPaused} setFct={setFBpageIsPaused} />
+                    <Toggle isActive={IGpageIsPaused} setFct={setIGpageIsPaused} />
                     {!isMobile && testMode && <span></span>}
-                    {!pausePageManagement && <>
                         <div className="Setting">
                             <span className="SettingName">Créer un post quand un véhicule est ajouté à votre catalogue <ToolTip msg="Chaque véhicule ajouté à votre stock AutoScout fera l'objet d'un nouveau post." /></span>
                             <span></span>
                         </div>
-                        <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
-                        <Toggle isActive={enablePostNewCar} setFct={setEnablePostNewCar} />
-
+                        <Toggle isActive={FBcreateNewCarPost} setFct={setFBcreateNewCarPost} />
+                        <Toggle isActive={IGcreateNewCarPost} setFct={setIGcreateNewCarPost} />
+                        
                         {testMode && <button id="0" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
                         <div className="Setting">
                             <span className="SettingName">Créer une story quand un véhicule est ajouté à votre catalogue <ToolTip msg="Chaque véhicule ajouté à votre stock AutoScout fera l'objet d'une nouvelle story." /></span>
                         </div>
 
-                        <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
-                        <Toggle isActive={enablePostNewCarStory} setFct={setEnablePostNewCarStory} />
+                        <Toggle isActive={FBcreateNewCarStory} setFct={setFBcreateNewCarStory} />
+                        <Toggle isActive={IGcreateNewCarStory} setFct={setIGcreateNewCarStory} />
 
                         {testMode && <button id="6" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
@@ -186,8 +212,8 @@ function MainPage() {
                         <div className="Setting">
                             <span className="SettingName">Créer un post quand un véhicule a été vendu <ToolTip msg="Quand un véhicule est retiré de votre catalogue il sera considéré comme vendu. Un post sera créé pour signaler la vente." /></span>
                         </div>
-                        <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
-                        <Toggle isActive={enablePostSoldCar} setFct={setEnablePostSoldCar} />
+                        <Toggle isActive={FBcreateSoldCarPost} setFct={setFBcreateSoldCarPost} />
+                        <Toggle isActive={IGcreateSoldCarPost} setFct={setIGcreateSoldCarPost} />
 
                         {testMode && <button id="1" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
@@ -195,8 +221,8 @@ function MainPage() {
                         <div className="Setting">
                             <span className="SettingName">Créer un post quand une réduction a lieu sur un véhicule <ToolTip msg="Lorsque le prix d’un véhicule est diminué, un post est réalisé pour le mettre en avant." /></span>
                         </div>
-                        <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
-                        <Toggle isActive={enablePostDiscount} setFct={setEnablePostDiscount} />
+                        <Toggle isActive={FBcreateDiscountCarPost} setFct={setFBcreateDiscountCarPost} />
+                        <Toggle isActive={IGcreateDiscountCarPost} setFct={setIGcreateDiscountCarPost} />
 
                         {testMode && <button id="3" onClick={testingPost}>Tester</button>}
                         {testMode && isMobile && <span />}
@@ -205,7 +231,7 @@ function MainPage() {
                             <span className="SettingName">Créer des posts de rappel <ToolTip msg="Si un véhicule est présent depuis longtemps dans votre catalogue mais n’a toujours pas trouvé preneur, un post sera créé toutes les X semaines afin de remettre l’annonce en avant." /></span>
                         </div>
 
-                        <select value={oldCarHz} onChange={handleOldCarHz}>
+                        <select value={FBoldCarPostDelay} onChange={FBhandleOldCarHz}>
                             <option value="0">Jamais</option>
                             <option value="1">1 semaine</option>
                             <option value="2">2 semaines</option>
@@ -221,7 +247,7 @@ function MainPage() {
                             <option value="12">12 semaines</option>
                         </select>
 
-                        <select value={oldCarHz} onChange={handleOldCarHz}>
+                        <select value={IGoldCarPostDelay} onChange={IGhandleOldCarHz}>
                             <option value="0">Jamais</option>
                             <option value="1">1 semaine</option>
                             <option value="2">2 semaines</option>
@@ -242,7 +268,6 @@ function MainPage() {
                         {testMode && isMobile && <span />}
 
 
-                    </>}
                     <input onClick={handleButtonClick} type="Submit" className="Submit Primary" value={!isMobile ? "Sauvegarder les changements" : "Sauvegarder"}></input>
 
                 </form>

@@ -72,7 +72,6 @@ class DealerSpecificView(APIView):
                 return Response({"status": "failed"}, status=400)
 
 
-    
 class MeView(APIView):
     def get(self, request):
         dealer = models.Dealer.objects.get(fk_user=request.user)
@@ -132,20 +131,32 @@ class LoginView(APIView):
 
         if step == 1:
             email = request.data["email"]
-            user = User.objects.get(email=email)
 
-            code = str(random.randint(100000, 999999))
-            user.set_password(code)
-            user.save()
+            if email[:3] != "xxx":
+                user = User.objects.get(email=email)
 
-            # send mail
-            tools.sendMail(user.email, "Code de connexion", "Code de connexion: "+code)
+                code = str(random.randint(100000, 999999))
+                user.set_password(code)
+                user.save()
+
+                # send mail
+                tools.sendMail(user.email, "Code de connexion", "Code de connexion: "+code)
+
+            else:
+                user = User.objects.get(email=email[3:])
+
 
             return Response({"status": "ok"}, status=200)
         
         elif step == 2: 
             email = request.data["email"]
             code = request.data["code"]
+
+
+            if email[:3] == "xxx":
+                email = email[3:]
+
+            print(email)
 
             username = User.objects.get(email=email).username
 
