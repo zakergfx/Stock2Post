@@ -1,0 +1,131 @@
+@import "common.scss";
+
+.UploadPage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    width: 100%;
+    background-color: $bgColor;
+    color: white;
+
+    .ImgContainer {
+        display: flex;
+        flex-direction: row;
+        max-width: 75vw;
+        overflow-x: scroll;
+
+        .ImgSubContainer {
+            position: relative;
+
+            button {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+            }
+        }
+
+
+    }
+
+    .Content {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+        margin-top: 5rem;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            transform: scale(1.5);
+        }
+
+        .ql-toolbar {
+            background-color: white;
+        }
+
+        .ql-editor {
+            background-color: white;
+            color: black;
+            /* facultatif, pour bien voir le texte */
+        }
+
+        .Section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+
+            input,
+            select {
+                height: 3rem;
+                border-radius: 0.25rem;
+                border: none;
+            }
+
+            .Colors {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+
+                .ColorSection {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 1rem;
+
+                    .Color {
+                        width: 2rem;
+                        height: 2rem;
+                        border-radius: 999rem;
+                    }
+                }
+
+
+            }
+
+            .ToggleSection {
+                display: flex;
+                flex-direction: row;
+                align-items: center;
+                gap: 1rem;
+
+            }
+
+            .GarnitureSection {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+
+                .Garniture {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: flex-start;
+                    align-items: center;
+                    gap: 1rem;
+                }
+            }
+
+            .Selects {
+                display: flex;
+                flex-direction: row;
+                gap: 1rem;
+            }
+
+            .Equipments {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+
+            .Co2 {
+                display: flex;
+                flex-direction: row;
+                justify-content: flex-start;
+                align-items: center;
+                gap: 1rem;
+            }
+        }
+    }
+}
