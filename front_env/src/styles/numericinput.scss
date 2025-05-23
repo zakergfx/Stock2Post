@@ -1,0 +1,35 @@
+@import "common.scss";
+
+.NumericInput {
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+
+    span {
+        color: black;
+        padding: 1rem 3rem;
+
+        &.Sign {
+            background-color: gainsboro;
+            cursor: pointer;
+
+            &#Plus {
+                border-radius: 0rem 0.25rem 0.25rem 0rem;
+            }
+
+            &#Minus {
+                border-radius: 0.25rem 0rem 0rem 0.25rem;
+            }
+        }
+
+        &.Nb {
+            text-align: center;
+            background-color: white;
+
+        }
+
+    }
+}
