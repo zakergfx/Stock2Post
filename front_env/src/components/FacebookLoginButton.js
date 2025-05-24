@@ -29,7 +29,7 @@ function FacebookLoginButton() {
 
 
     // récupération long user token
-    response = await fetch(`https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=REMOVED_FACEBOOK_APP_ID&client_secret=cf4ad9d1e6a0f5b315bbd17d7e407e00&fb_exchange_token=${userToken}`)
+    response = await fetch(`https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=XXX&client_secret=XXX&fb_exchange_token=${userToken}`)
     const longUserToken = (await response.json()).access_token
 
     //récupération long page token
