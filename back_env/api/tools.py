@@ -55,7 +55,7 @@ def sendMail(to, subject, body):
     # Configuration du serveur SMTP
     serveur = smtplib.SMTP("smtp.gmail.com", 587)
     serveur.starttls()  # Sécurisation de la connexion
-    serveur.login(sender, "ygpf xybe ktrj uyoh")
+    serveur.login(sender, "xxxxxxxxx")
 
     # Envoi de l'email
     try:
