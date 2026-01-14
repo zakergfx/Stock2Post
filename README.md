@@ -17,6 +17,25 @@ One simple solution to this problem is <b>Stock2Post.be</b>. It parse the AutoSc
 
 The tool allow each dealer to map one Facebook and Instagram page to their account so that the automation can start. They also can configure which type of posts they want for each of their socials (Only new ad post, also post stories, post cars that are in the stock since a logn time and that have not been sold etc.)
 
+## How it works
+
+### Data retrieval
+
+The system retrieves vehicle data by parsing the public AutoScout24 dealer pages. Each registered dealer's stock page is fetched and analyzed using BeautifulSoup to extract:
+- Vehicle details (model, price, mileage, fuel type, transmission, power)
+- Images and thumbnails
+- Technical specifications and equipment lists
+- CarPass information when available
+
+The parsing runs multiple times per day via scheduled Celery tasks to detect:
+- **New arrivals**: Vehicles appearing in the stock that weren't there before
+- **Price changes**: Comparing current prices with previously stored values to detect discounts
+- **Sold vehicles**: Vehicles that were in stock but are no longer listed
+
+### Request distribution
+
+To ensure reliable data retrieval and avoid overloading any single endpoint, the system distributes requests across multiple network paths. This approach helps maintain consistent service availability and prevents any single point from being overwhelmed by repeated requests.
+
 <img src="imagesMd/home.png" alt="Secret creation" width="75%"><br/><br/>
 
 ### Accouts mapping
