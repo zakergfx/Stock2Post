@@ -1,4 +1,4 @@
-import random, time, string, smtplib, re
+import random, time, string, smtplib, re, os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -41,8 +41,9 @@ def formatPower(power):
 
 def sendMail(to, subject, body):
     # Configuration de l'email
-    sender = "REMOVED_EMAIL"
-   
+    sender = os.getenv("SMTP_EMAIL")
+    password = os.getenv("SMTP_PASSWORD")
+
     # Création du message
     message = MIMEMultipart()
     message["From"] = sender
@@ -55,7 +56,7 @@ def sendMail(to, subject, body):
     # Configuration du serveur SMTP
     serveur = smtplib.SMTP("smtp.gmail.com", 587)
     serveur.starttls()  # Sécurisation de la connexion
-    serveur.login(sender, "xxxxxxxxx")
+    serveur.login(sender, password)
 
     # Envoi de l'email
     try:

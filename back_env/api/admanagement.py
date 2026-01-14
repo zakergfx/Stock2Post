@@ -11,8 +11,7 @@ import numpy as np
 
 BASEURL = f"https://graph.facebook.com/v22.0"
 PROXIES = [
-               {"http": "http://REMOVED_PROXY_CREDENTIALS"},
-
+               {"http": os.getenv("PROXY_URL", "")},
                ]
 
 def testing():

@@ -76,8 +76,8 @@ function ProfilPage() {
                         <span>Vous voulez changer de compte ? cliquez sur le bouton ci-dessous</span>
                     </>
                 }
-                {/* <button className="IgButton" onClick={() => window.location.replace(`https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=REMOVED_INSTAGRAM_CLIENT_ID&redirect_uri=https://${process.env.REACT_APP_SERVERNAME}/iglogin&response_type=code&scope=instagram_business_basic%2Cinstagram_business_manage_messages%2Cinstagram_business_manage_comments%2Cinstagram_business_content_publish%2Cinstagram_business_manage_insights`)} >LIER VOTRE PAGE INSTAGRAM</button> */}
-                <button className="IgButton" onClick={() => window.location.replace(`https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=REMOVED_INSTAGRAM_CLIENT_ID&redirect_uri=https://${process.env.REACT_APP_SERVERNAME}/iglogin&response_type=code&scope=instagram_business_basic%2Cinstagram_business_content_publish`)} >LIER VOTRE PAGE INSTAGRAM</button>
+                {/* Old OAuth URL with more scopes - kept for reference */}
+                <button className="IgButton" onClick={() => window.location.replace(`https://www.instagram.com/oauth/authorize?enable_fb_login=0&force_authentication=1&client_id=${process.env.REACT_APP_INSTAGRAM_CLIENT_ID}&redirect_uri=https://${process.env.REACT_APP_SERVERNAME}/iglogin&response_type=code&scope=instagram_business_basic%2Cinstagram_business_content_publish`)} >LIER VOTRE PAGE INSTAGRAM</button>
 
                 <h2>Vos informations</h2>
                 {!inEdit ? <>

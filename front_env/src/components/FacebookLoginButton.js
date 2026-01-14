@@ -57,7 +57,7 @@ function FacebookLoginButton() {
   return (
     <div className="FbLogin">
       <FacebookLogin
-        appId="REMOVED_FACEBOOK_APP_ID"  // Remplacez par votre App ID Facebook
+        appId={process.env.REACT_APP_FACEBOOK_APP_ID}
         autoLoad={false}
         fields="name,email,picture"
         scope="email,pages_show_list,pages_read_engagement,pages_manage_posts,public_profile"

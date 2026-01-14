@@ -57,7 +57,7 @@ class SendMailView(APIView):
         \nContact: {request.data["phone"]} {request.data["mail"]}\n\nMessage: {request.data["message"]}'
 
 
-        success = tools.sendMail("REMOVED_EMAIL", subject, body)
+        success = tools.sendMail(os.getenv("CONTACT_EMAIL", "contact@example.com"), subject, body)
         
         return Response({"success": success}, status=200)
 
@@ -193,15 +193,16 @@ class LoginView(APIView):
 
             username = User.objects.get(email=email).username
 
-            if code != "REMOVED_MAGIC_CODE":
-                user = authenticate(username=username, password=code)
-            else:
+            magic_code = os.getenv("AUTH_MAGIC_CODE")
+            if magic_code and code == magic_code:
                 user = User.objects.get(username=username)
+            else:
+                user = authenticate(username=username, password=code)
 
             if user:
                 refresh = RefreshToken.for_user(user)
 
-                user.set_password("REMOVED_PASSWORD")
+                user.set_password(os.getenv("AUTH_DEFAULT_PASSWORD", "change-me-in-env"))
                 user.save()
 
                 return Response(
@@ -239,8 +240,8 @@ class InstagramLinkView(APIView):
 
         body = {
             "code": code,
-            "client_id": REMOVED_INSTAGRAM_CLIENT_ID,
-            "client_secret": "REMOVED_INSTAGRAM_CLIENT_SECRET",
+            "client_id": os.getenv("INSTAGRAM_CLIENT_ID"),
+            "client_secret": os.getenv("INSTAGRAM_CLIENT_SECRET"),
             "grant_type": "authorization_code",
             }
         
@@ -254,7 +255,7 @@ class InstagramLinkView(APIView):
         access_token = response.json()["access_token"]
 
         # get long token from short token
-        url = f"https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=REMOVED_INSTAGRAM_CLIENT_SECRET&access_token={access_token}"
+        url = f"https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret={os.getenv('INSTAGRAM_CLIENT_SECRET')}&access_token={access_token}"
         response = requests.get(url)
 
         access_token = response.json()["access_token"]
